@@ -4,13 +4,17 @@
     {
         public static bool isDebug = false;
         List<ILogger> loggers = new List<ILogger>();
-        List<Type> types = new List<Type>() { typeof(ConsoleLogger), typeof(FileLogger) };
+        List<Type> types = new List<Type>() { typeof(ConsoleLogger), typeof(FileLogger), typeof(TelegramLogger) };
 
         public Logger(Type ShortFileName)
         {
             foreach (var type in types)
             {
-                loggers.Add((ILogger)type.GetConstructors().First(x => x.GetParameters().Any(y => y.ParameterType == typeof(Type))).Invoke(new object[] { ShortFileName } ));
+                try
+                {
+                    loggers.Add((ILogger)type.GetConstructors().First(x => x.GetParameters().Any(y => y.ParameterType == typeof(Type))).Invoke(new object[] { ShortFileName }));
+                }
+                catch { }
             }
         }
 
@@ -18,7 +22,11 @@
         {
             foreach (var type in types)
             {
-                loggers.Add((ILogger)type.GetConstructors().First(x => x.GetParameters().Any(y => y.ParameterType == typeof(string))).Invoke(new object[] { name }));
+                try
+                {
+                    loggers.Add((ILogger)type.GetConstructors().First(x => x.GetParameters().Any(y => y.ParameterType == typeof(string))).Invoke(new object[] { name }));
+                }
+                catch { }
             }
         }
         public void Debug(object data)

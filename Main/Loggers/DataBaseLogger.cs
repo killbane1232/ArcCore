@@ -3,7 +3,6 @@
     internal class DataBaseLogger : ILogger
     {
         string baseName;
-        private readonly string format = "HH:mm:ss.ffffzzz";
         public static bool isDebug = false;
         
 
@@ -18,19 +17,61 @@
         }
         public void Debug(object data)
         {
-            Console.WriteLine($"[{baseName} {DateTime.Now.ToString(format)}]-(Debug) \"{data}\"");
+            var log = new Log();
+            log.ClassName = baseName;
+            log.UserId = (0);
+            log.Data = data.ToString() ?? "";
+            log.Type = 2;
+            log.LogDate = DateTime.Now;
+            using (var db = new ApplicationContext())
+            {
+                db.Add(log);
+                db.SaveChanges();
+            }
         }
         public void Debug(string symbol, object data)
         {
-            Console.WriteLine($"[{baseName} {DateTime.Now.ToString(format)}]-(Debug {symbol}) \"{data}\"");
+            var log = new Log();
+            log.ClassName = baseName;
+            log.UserId = (0);
+            log.Data = data.ToString() ?? "";
+            log.Type = 2;
+            log.Addictional = "symbol:" + symbol;
+            log.LogDate = DateTime.Now;
+            using (var db = new ApplicationContext())
+            {
+                db.Add(log);
+                db.SaveChanges();
+            }
         }
         public void Log(object data, string type)
         {
-            Console.WriteLine($"[{baseName} {DateTime.Now.ToString(format)}]-({type}) \"{data}\"");
+            var log = new Log();
+            log.ClassName = baseName;
+            log.UserId = (0);
+            log.Data = data.ToString() ?? "";
+            log.Type = type == "message"? 0:1;
+            log.LogDate = DateTime.Now;
+            using (var db = new ApplicationContext())
+            {
+                db.Add(log);
+                db.SaveChanges();
+            }
         }
         public void Log(string symbol, object data, string type)
         {
-            Console.WriteLine($"[{baseName} {DateTime.Now.ToString(format)}]-({type} {symbol}) \"{data}\"");
+            var log = new Log();
+            log.ClassName = baseName;
+            log.UserId = (0);
+            log.Data = data.ToString() ?? "";
+            log.Type = type == "message" ? 0 : 1;
+            log.Addictional = "symbol:" + symbol;
+            log.LogDate = DateTime.Now;
+            using (var db = new ApplicationContext())
+            {
+                db.Add(log);
+                db.SaveChanges();
+            }
         }
     }
 }

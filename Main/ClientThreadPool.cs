@@ -13,9 +13,11 @@ namespace Arcam.Main
         Type platformType;
         Logger logger = new Logger(typeof(ClientThreadPool));
         Type workerType;
-        public ClientThreadPool(IIndicatorsSerializer sere, Type platformType)
+        public ClientThreadPool(IIndicatorsSerializer sere, Type platformType, Type workerType)
         {
             this.platformType = platformType;
+            this.workerType = workerType;
+            this.sere = sere;
             threads = new List<Task>();
             cancellationToken = new List<CancellationTokenSource>();
             names = new List<string>();
@@ -30,9 +32,15 @@ namespace Arcam.Main
                 var lines = File.ReadAllLines(file);
                 if (lines.Length < 2 || lines[0].Length < 24 || lines[1].Length < 48)
                     continue;
-                IPlatform platform = (IPlatform)platformType.GetConstructor(new Type[] { typeof(string), typeof(string) }).Invoke(new object[] { lines[0], lines[1] });
+                var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string) });
+                if (platformConstructor == null)
+                    throw new Exception("No constructor for Platform " + platformType.Name);
+                IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { lines[0], lines[1] });
                 var tokenSource = new CancellationTokenSource();
-                var worker = (Worker)workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(int), typeof(IIndicatorsSerializer) }).Invoke(new object[] { platform, tokenSource.Token, threads.Count, sere });
+                var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(int), typeof(IIndicatorsSerializer) });
+                if (workerConstructor == null)
+                    throw new Exception("No constructor for Worker " + workerType.Name);
+                var worker = (Worker)workerConstructor.Invoke(new object[] { platform, tokenSource.Token, threads.Count, sere });
                 var thread = new Task(() =>
                 {
                     Thread.CurrentThread.Name = info.Name;
@@ -43,6 +51,7 @@ namespace Arcam.Main
                 cancellationToken.Add(tokenSource);
                 threads.Add(thread);
                 names.Add(file);
+                logger.Info("Started thread " + names[^1]);
             }
             ConsoleUI.maxName = maxName;
             ConsoleUI.PrepareMenu(directoryFiles.Count());
@@ -70,9 +79,15 @@ namespace Arcam.Main
                         each.Dispose();
                         var info = new FileInfo(names[i]);
                         var lines = File.ReadAllLines(names[i]);
-                        IPlatform platform = (IPlatform)platformType.GetConstructor(new Type[] { typeof(string), typeof(string) }).Invoke(new[] { lines[0], lines[1] });
+                        var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string) });
+                        if (platformConstructor == null)
+                            throw new Exception("No constructor for Platform " + platformType.Name);
+                        IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { lines[0], lines[1] });
                         var tokenSource = new CancellationTokenSource();
-                        var worker = (Worker)workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(int), typeof(IIndicatorsSerializer) }).Invoke(new object[] { platform, tokenSource.Token, threads.Count, sere });
+                        var constructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(int), typeof(IIndicatorsSerializer) });
+                        if (constructor == null)
+                            throw new Exception("No constructor for Worker " + workerType.Name);
+                        var worker = (Worker)constructor.Invoke(new object[] { platform, tokenSource.Token, threads.Count, sere });
                         task = new Task(() =>
                         {
                             Thread.CurrentThread.Name = info.Name;
