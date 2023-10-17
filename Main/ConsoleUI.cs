@@ -8,7 +8,7 @@ namespace Arcam.Main
         public static int maxName = 0;
         public static int size = 0;
         public static bool test = false;
-        public static bool isLinux = true;//!RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        public static bool isLinux = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         public delegate void Prepare(int size);
         public delegate void Print(string vallet, List<string> data, int index, IIndicatorsSerializer sere);
         public static Prepare PrepareMenu = (size)=> { };
