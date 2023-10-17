@@ -115,14 +115,14 @@ namespace Arcam.Main
             }
         }
 
-        public void SendTextMessage(string message, long id)
+        public void SendMdTableMessage(string message, long id)
         {
             foreach (var item in Users)
             {
                 if (item.Key == id)
                 {
                     client.SendTextMessageAsync(item.Key,
-                        message);
+                        message, parseMode: ParseMode.Html);
                     return;
                 }
             }

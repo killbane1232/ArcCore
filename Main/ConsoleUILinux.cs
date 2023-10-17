@@ -7,16 +7,20 @@ namespace Arcam.Main
     public class ConsoleUILinux
     {
         static object locker = new object();
-        public static List<string> baseList = new List<string>();
+        public static List<List<string>> baseList = new List<List<string>>();
         public static void PrepareMenu(int size)
         {
             ConsoleUI.size = size;
             if (!ConsoleUI.isLinux)
                 return;
             for (int i = -1; i < size; i++)
-                baseList.Add("");
+                baseList.Add(new List<string>());
+            baseList[0] = new List<string>();
+            baseList[0].Add("Name");
+            baseList[0].Add("Vallet");
         }
         static int printCnt = 0;
+        const string date = "║Last update   ";
         public static void PrintData(string vallet, List<string> data, int index, IIndicatorsSerializer sere)
         {
             if (!ConsoleUI.isLinux)
@@ -24,34 +28,68 @@ namespace Arcam.Main
             lock (locker)
             {
                 printCnt++;
-                var str = new StringBuilder("║Name");
-                for (int i = 0; i < ConsoleUI.maxName - 3; i++)
-                    str.Append(" ");
-                str.Append("║Vallet    ");
+                baseList[0] = new List<string>
+                {
+                    "Name",
+                    "Vallet"
+                };
                 var indics = sere.GetIndicators();
                 foreach (var each in indics)
-                    str.Append($"║{each.Key}{new string(' ', 10 - each.Key.Length)}");
-                str.Append("║Last update        ");
-                baseList[0] = str.ToString();
-
+                {
+                    var first = baseList[0].FindIndex(x => x == each.Key);
+                    if (first == -1)
+                        baseList[0].Add(each.Key);
+                }
+                baseList[index + 1] = new List<string>
+                {
+                    Thread.CurrentThread.Name,
+                    vallet
+                };
                 var name = Thread.CurrentThread.Name;
-                str = new StringBuilder($"║{Thread.CurrentThread.Name}{new string(' ', ConsoleUI.maxName - (name != null ? name.Length - 1:5))}║{vallet}{new string(' ', 10 - vallet.ToString().Length)}");
                 foreach (var each in data)
-                    str.Append($"║{each}{new string(' ', 10 - each.Length)}");
-                str.Append("║" + DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss") + "║");
-                baseList[index + 1] = str.ToString();
+                    baseList[index + 1].Add(each);
+                baseList[index + 1].Add(DateTime.Now.ToString("dd.MM HH:mm:ss"));
+
                 if (printCnt % ConsoleUI.size == 0)
                 {
-                    var statuses = new StringBuilder();
-                    foreach (var each in baseList) { 
-                        statuses = statuses.Append(each).Append('\n');
-                        Console.WriteLine(each);
+                    var maxList = new List<int>();
+                    for(int i = 0; i < baseList[0].Count; i++)
+                    {
+                        var max = 0;
+                        for(int j = 0; j < baseList.Count; j++)
+                            if (baseList[j][i].Length > max)
+                                max = baseList[j][i].Length;
+                        maxList.Add(max);
+                    }
+                    foreach (var each in baseList) {
+                        var str = new StringBuilder();
+                        for (var i = 0; i < each.Count; i++)
+                            str.Append("║" + each[i] + (maxList.Count > i && maxList[i] > each[i].Length ? new string(' ', maxList[i] - each[i].Length) : ""));
+                        if (each.Count == baseList[0].Count)
+                        {
+                            str.Append(date);
+                        }
+                        Console.WriteLine(str.ToString());
                     }
                     if (ConsoleUI.needStatus > -1)
                     {
                         try
                         {
-                            TelegramLogger.bot.SendTextMessage(statuses.ToString(), ConsoleUI.needStatus);
+                            var statuses = new StringBuilder();
+                            statuses.Append("<pre>\n");
+                            foreach (var each in baseList)
+                            {
+                                var str = new StringBuilder();
+                                for (var i = 0; i < each.Count; i++)
+                                    str.Append("║" + each[i] + (maxList.Count > i && maxList[i] > each[i].Length ? new string(' ', maxList[i] - each[i].Length) : ""));
+                                if (each.Count == baseList[0].Count)
+                                {
+                                    str.Append(date);
+                                }
+                                statuses.Append(str).Append('\n');
+                            }
+                            statuses.Append("\n</pre>");
+                            TelegramLogger.bot.SendMdTableMessage(statuses.ToString(), ConsoleUI.needStatus);
                         }
                         catch
                         {
