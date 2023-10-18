@@ -1,4 +1,6 @@
-﻿namespace Arcam.Main.Loggers
+﻿using System.Text;
+
+namespace Arcam.Main.Loggers
 {
     public class Logger
     {
@@ -87,11 +89,16 @@
         }
         public void Error(object data)
         {
+            string res = data.ToString();
+            if (data is Exception)
+            {
+                res = GetErrorString(data as Exception);
+            }
             foreach (var logger in loggers)
             {
                 try
                 {
-                    logger.Log(data, "Error");
+                    logger.Log(res, "Error");
                 }
                 catch (Exception)
                 {
@@ -101,17 +108,35 @@
         }
         public void Error(string symbol, object data)
         {
+            string res = data.ToString();
+            if (data is Exception)
+            {
+                res = GetErrorString(data as Exception);
+            }
             foreach (var logger in loggers)
             {
                 try
                 {
-                    logger.Log(symbol, data, "Error");
+                    logger.Log(symbol, res, "Error");
                 }
                 catch (Exception)
                 {
 
                 }
             }
+        }
+        public static string GetErrorString(Exception ex)
+        {
+            var str = new StringBuilder();
+            str.Append($"{ex.GetType().ToString()}:{ex.Message}\n");
+            var arr = ex.StackTrace.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            var i = 0;
+            while (i < arr.Length && !arr[i].Contains("Arcam")) i++;
+            for (; i < arr.Length; i++)
+            {
+                str = str.Append(arr[i]).Append("\n");
+            }
+            return str.ToString();
         }
     }
 }
