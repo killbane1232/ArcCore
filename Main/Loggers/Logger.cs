@@ -128,7 +128,7 @@ namespace Arcam.Main.Loggers
         public static string GetErrorString(Exception ex)
         {
             var str = new StringBuilder();
-            str.Append($"{ex.GetType().ToString()}:{ex.Message}\n");
+            str.Append($"{ex.GetType().ToString()}: {ex.Message}\n");
             var arr = ex.StackTrace.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             var i = 0;
             while (i < arr.Length && !arr[i].Contains("Arcam")) i++;
