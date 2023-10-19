@@ -1,4 +1,5 @@
 ﻿using Arcam.Indicators.IndicatorsSerealizers;
+using Arcam.Main.Loggers;
 using System.Text;
 
 namespace Arcam.Main
@@ -7,72 +8,30 @@ namespace Arcam.Main
     public class ConsoleUIWindows
     {
         static object locker = new object();
-        public static void PrepareMenu(int size)
+        public static List<string> keysList = new List<string>();
+        public static List<string> namesList = new List<string>();
+        public static List<string> valletList = new List<string>();
+        public static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
+        static int printCnt = 0;
+        const string date = "Last update";
+        const string valletStr = "Vallet";
+        public static void PrepareMenu(List<string> names)
         {
-            if (ConsoleUI.test)
+            ConsoleUI.size = names.Count;
+            namesList = names;
+            if (!ConsoleUI.isLinux)
                 return;
-            if (ConsoleUI.isLinux)
-                return;
-
-            ConsoleUI.size = size;
-            var buffer = Console.BufferWidth - 2;
-            var cnt = ConsoleUI.maxName + 1;
-            var str = new StringBuilder("╔");
-            for (int j = 1; j < buffer; j++)
+            foreach (var name in names)
             {
-                if ((j == ConsoleUI.maxName + 2 || ((j - cnt) % 8 == 1 && j > ConsoleUI.maxName + 2)) && buffer - j - 19 > 0)
-                    str.Append("╦");
-                else
-                    str.Append("═");
+                baseList.Add(name, new Dictionary<string, string>());
             }
-            str.Append("╗");
-
-            Console.WriteLine(str.ToString());
-            Console.CursorLeft = 0;
-            Console.CursorTop = 1;
-
-            str = new StringBuilder("║Name");
-            for (int i = 0; i < ConsoleUI.maxName - 3; i++)
-                str.Append(" ");
-            str.Append("║Vallet\t");
-
-            Console.WriteLine(str.ToString());
-            Console.CursorLeft = 0;
-            Console.CursorTop = 2;
-
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < ConsoleUI.size; i++)
             {
-                str = new StringBuilder("╠");
-                for (int j = 1; j < buffer; j++)
-                    if ((j == ConsoleUI.maxName + 2 || ((j - cnt) % 8 == 1 && j > ConsoleUI.maxName + 2)) && buffer - j - 19 > 0)
-                        str.Append("╬");
-                    else
-                        str.Append("═");
-                str.Append("╣");
-                Console.WriteLine(str.ToString());
-                str = new StringBuilder("║");
-                for (int j = 1; j < buffer; j++)
-                    if ((j == ConsoleUI.maxName + 2 || ((j - cnt) % 8 == 1 && j > ConsoleUI.maxName + 2)) && buffer - j - 19 > 0)
-                        str.Append("║");
-                    else
-                        str.Append(" ");
-                str.Append("║");
-                Console.WriteLine(str.ToString());
+                valletList.Add("0");
             }
-            str = new StringBuilder("╚");
-            for (int j = 1; j < buffer; j++)
-                if (j == ConsoleUI.maxName + 2)
-                    str.Append("╩");
-                else
-                if ((j - cnt) % 8 == 1 && j > ConsoleUI.maxName + 2 && buffer - j - 19 > 0)
-                    str.Append("╩");
-                else
-                    str.Append("═");
-            str.Append("╝");
-            Console.WriteLine(str.ToString());
         }
 
-        public static void PrintData(string vallet, List<string> data, int index, IIndicatorsSerializer sere)
+        public static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
         {
             if (ConsoleUI.test)
                 return;
@@ -81,39 +40,80 @@ namespace Arcam.Main
 
             lock (locker)
             {
-                var cnt = ConsoleUI.maxName;
-                var dataStart = ConsoleUI.maxName + 11;
-                var buffer = Console.BufferWidth - 2;
-                Console.CursorLeft = dataStart;
-                Console.CursorTop = 1;
-                for (int j = dataStart; j < buffer; j++)
-                    if (j == ConsoleUI.maxName + 2 || ((j - cnt) % 8 == 2 && j > ConsoleUI.maxName + 2))
-                        Console.Write("║");
-                    else
-                        Console.Write(" ");
-                Console.CursorLeft = dataStart - 1;
+                printCnt++;
+                Dictionary<string, string>? currentThreadDict = null;
+                if (!baseList.ContainsKey(Thread.CurrentThread.Name ?? ""))
+                {
+                    currentThreadDict = new Dictionary<string, string>();
+                    baseList[Thread.CurrentThread.Name ?? ""] = currentThreadDict;
+                }
+                else
+                    currentThreadDict = baseList[Thread.CurrentThread.Name ?? ""];
+                currentThreadDict[valletStr] = vallet;
                 var indics = sere.GetIndicators();
                 foreach (var each in indics)
-                    Console.Write($"║{each.Key} ");
-                Console.Write("║");
-                Console.CursorLeft = buffer - 19;
-                Console.Write("Last update        ");
-                Console.CursorLeft = buffer;
-                Console.Write("║");
-                Console.CursorTop = (index * 2) + 3;
-                Console.CursorLeft = 1;
-                for (int j = 0; j < buffer; j++)
-                    if (j == ConsoleUI.maxName + 2 || ((j - cnt) % 8 == 1 && j > ConsoleUI.maxName + 2))
-                        Console.Write("║");
-                    else
-                        Console.Write(" ");
-                Console.CursorLeft = buffer - 19;
-                Console.Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss") + "║");
-                Console.CursorLeft = 0;
-                Console.Write($"║{Thread.CurrentThread.Name}");
-                Console.CursorLeft = ConsoleUI.maxName + 2;
-                Console.Write($"║{vallet}");
-                Console.CursorLeft = dataStart - 1;
+                {
+                    if (!keysList.Contains(each.Key))
+                    {
+                        keysList.Add(each.Key);
+                        keysList.Sort();
+                    }
+                    currentThreadDict[each.Key] = data[each.Key];
+                }
+                currentThreadDict[date] = DateTime.Now.ToString("dd.MM HH:mm:ss");
+
+                if (printCnt % ConsoleUI.size == 0)
+                {
+                    var maxName = 0;
+                    var maxVallet = 6;
+                    var str = new StringBuilder();
+                    for (var i = 0; i < ConsoleUI.size; i++)
+                    {
+                        if (maxName < namesList[i].Length)
+                            maxName = namesList[i].Length;
+                        if (baseList[namesList[i]].ContainsKey(valletStr) && maxVallet < baseList[namesList[i]][valletStr].Length)
+                            maxVallet = baseList[namesList[i]][valletStr].Length;
+                    }
+                    str.Append(new string(' ', maxName)).Append("║").Append("Vallet");
+                    if (maxVallet > 6)
+                    {
+                        str.Append(new string(' ', maxVallet - 6));
+                    }
+                    for (var i = 0; i < keysList.Count; i++)
+                        str.Append($"║{keysList[i]}");
+                    str.Append($"║{date}\n");
+                    foreach (var each in baseList)
+                    {
+                        str.Append(each.Key);
+                        if (each.Key.Length < maxName)
+                        {
+                            str.Append(new string(' ', maxName - each.Key.Length));
+                        }
+                        str.Append("║").Append(each.Value[valletStr]);
+                        if (each.Value[valletStr].Length < maxVallet)
+                        {
+                            str.Append(new string(' ', maxVallet - each.Value[valletStr].Length));
+                        }
+                        for (var i = 0; i < keysList.Count; i++)
+                            str.Append("║" + each.Value[keysList[i]] + new string(' ', keysList[i].Length - each.Value[keysList[i]].Length));
+                        str.Append($"║{each.Value[date]}\n");
+                    }
+                    Console.WriteLine(str.ToString());
+                    if (ConsoleUI.needStatus > -1)
+                    {
+                        try
+                        {
+                            str.Insert(0, "<pre>\n");
+                            str.Append("</pre>\n");
+                            TelegramLogger.bot.SendMdTableMessage(str.ToString(), ConsoleUI.needStatus);
+                        }
+                        catch
+                        {
+
+                        }
+                        ConsoleUI.needStatus = -1;
+                    }
+                }
             }
         }
     }

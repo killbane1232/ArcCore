@@ -22,8 +22,8 @@ namespace Arcam.Main
             cancellationToken = new List<CancellationTokenSource>();
             names = new List<string>();
             var directoryFiles = Directory.EnumerateFiles("./api");
-            var maxName = 0;
             sere.LoadIndicator();
+            var threadNames = new List<string>();
             foreach (var file in directoryFiles)
             {
                 if (!File.Exists(file))
@@ -37,24 +37,22 @@ namespace Arcam.Main
                     throw new Exception("No constructor for Platform " + platformType.Name);
                 IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { lines[0], lines[1] });
                 var tokenSource = new CancellationTokenSource();
-                var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(int), typeof(IIndicatorsSerializer) });
+                var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(IIndicatorsSerializer) });
                 if (workerConstructor == null)
                     throw new Exception("No constructor for Worker " + workerType.Name);
-                var worker = (Worker)workerConstructor.Invoke(new object[] { platform, tokenSource.Token, threads.Count, sere });
+                var worker = (Worker)workerConstructor.Invoke(new object[] { platform, tokenSource.Token, sere });
                 var thread = new Task(() =>
                 {
                     Thread.CurrentThread.Name = info.Name;
                     worker.WorkerPreparer();
                 }, tokenSource.Token);
-                if (info.Name.Length > maxName)
-                    maxName = info.Name.Length;
                 cancellationToken.Add(tokenSource);
                 threads.Add(thread);
                 names.Add(file);
+                threadNames.Add(info.Name);
                 logger.Info("Started thread " + names[^1]);
             }
-            ConsoleUI.maxName = maxName;
-            ConsoleUI.PrepareMenu(directoryFiles.Count());
+            ConsoleUI.PrepareMenu(threadNames);
         }
 
         void CheckAndRestartThreads()
