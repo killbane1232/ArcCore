@@ -59,7 +59,7 @@ namespace Arcam.Main
                     {
                         if (maxName < namesList[i].Length)
                             maxName = namesList[i].Length;
-                        if (baseList[namesList[i]].ContainsKey(valletStr) && maxVallet < baseList[namesList[i]][valletStr].Length)
+                        if (baseList.ContainsKey(namesList[i]) && baseList[namesList[i]].ContainsKey(valletStr) && maxVallet < baseList[namesList[i]][valletStr].Length)
                             maxVallet = baseList[namesList[i]][valletStr].Length;
                     }
                     str.Append(new string(' ', maxName)).Append("║").Append("Vallet");
