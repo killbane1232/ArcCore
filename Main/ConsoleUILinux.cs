@@ -20,6 +20,7 @@ namespace Arcam.Main
             foreach (var name in names)
             {
                 baseList.Add(name, new Dictionary<string, string>());
+                baseList[name].Add(valletStr, "0");
             }
         }
 
