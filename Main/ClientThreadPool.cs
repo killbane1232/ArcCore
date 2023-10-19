@@ -6,6 +6,9 @@ namespace Arcam.Main
 {
     public class ClientThreadPool
     {
+        static object locker = new object();
+        static List<string> threadNames;
+        static List<DateTime> lastResponse;
         List<Task> threads;
         List<CancellationTokenSource> cancellationToken;
         List<string> names;
@@ -23,7 +26,7 @@ namespace Arcam.Main
             names = new List<string>();
             var directoryFiles = Directory.EnumerateFiles("./api");
             sere.LoadIndicator();
-            var threadNames = new List<string>();
+            threadNames = new List<string>();
             foreach (var file in directoryFiles)
             {
                 if (!File.Exists(file))
@@ -61,7 +64,7 @@ namespace Arcam.Main
             {
                 var each = cancellationToken[i];
                 var task = threads[i];
-                if (task.Status == TaskStatus.Faulted || task.Status == TaskStatus.Canceled)
+                if (task.Status == TaskStatus.Faulted || task.Status == TaskStatus.Canceled || (DateTime.Now - lastResponse[i]).TotalMinutes > 1)
                 {
                     each.Cancel();
                     try
@@ -128,6 +131,14 @@ namespace Arcam.Main
                 {
                     each.Dispose();
                 }
+            }
+        }
+        public static void setLastResponse()
+        {
+            lock (locker)
+            {
+                var i = threadNames.FindIndex(x => x == Thread.CurrentThread.Name);
+                lastResponse[i] = DateTime.Now;
             }
         }
     }

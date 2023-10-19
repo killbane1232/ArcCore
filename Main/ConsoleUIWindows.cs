@@ -27,6 +27,7 @@ namespace Arcam.Main
 
             lock (locker)
             {
+                ClientThreadPool.setLastResponse();
                 printCnt++;
                 Dictionary<string, string>? currentThreadDict = null;
                 if (!baseList.ContainsKey(Thread.CurrentThread.Name ?? ""))
