@@ -17,11 +17,6 @@ namespace Arcam.Main
         {
             ConsoleUI.size = names.Count;
             namesList = names;
-            foreach (var name in names)
-            {
-                baseList.Add(name, new Dictionary<string, string>());
-                baseList[name].Add(valletStr, "0");
-            }
         }
 
         public static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
