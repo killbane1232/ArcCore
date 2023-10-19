@@ -22,6 +22,7 @@ namespace Arcam.Main
             this.workerType = workerType;
             this.sere = sere;
             threads = new List<Task>();
+            lastResponse = new List<DateTime> ();
             cancellationToken = new List<CancellationTokenSource>();
             names = new List<string>();
             var directoryFiles = Directory.EnumerateFiles("./api");
@@ -49,6 +50,7 @@ namespace Arcam.Main
                     Thread.CurrentThread.Name = info.Name;
                     worker.WorkerPreparer();
                 }, tokenSource.Token);
+                lastResponse.Add(DateTime.Now);
                 cancellationToken.Add(tokenSource);
                 threads.Add(thread);
                 names.Add(file);
