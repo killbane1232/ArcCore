@@ -10,7 +10,6 @@ namespace Arcam.Main
         static object locker = new object();
         public static List<string> keysList = new List<string>();
         public static List<string> namesList = new List<string>();
-        public static List<string> valletList = new List<string>();
         public static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
         static int printCnt = 0;
         const string date = "Last update";
@@ -19,23 +18,15 @@ namespace Arcam.Main
         {
             ConsoleUI.size = names.Count;
             namesList = names;
-            if (!ConsoleUI.isLinux)
-                return;
             foreach (var name in names)
             {
                 baseList.Add(name, new Dictionary<string, string>());
-            }
-            for (var i = 0; i < ConsoleUI.size; i++)
-            {
-                valletList.Add("0");
             }
         }
 
         public static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
         {
             if (ConsoleUI.test)
-                return;
-            if (ConsoleUI.isLinux)
                 return;
 
             lock (locker)
@@ -45,6 +36,7 @@ namespace Arcam.Main
                 if (!baseList.ContainsKey(Thread.CurrentThread.Name ?? ""))
                 {
                     currentThreadDict = new Dictionary<string, string>();
+                    currentThreadDict.Add(valletStr, vallet);
                     baseList[Thread.CurrentThread.Name ?? ""] = currentThreadDict;
                 }
                 else
