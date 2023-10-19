@@ -33,6 +33,11 @@ namespace Arcam.Main
                     "Name",
                     "Vallet"
                 };
+                baseList[index + 1] = new List<string>
+                {
+                    Thread.CurrentThread.Name,
+                    vallet
+                };
                 var indics = sere.GetIndicators();
                 foreach (var each in indics)
                 {
@@ -40,12 +45,6 @@ namespace Arcam.Main
                     if (first == -1)
                         baseList[0].Add(each.Key);
                 }
-                baseList[index + 1] = new List<string>
-                {
-                    Thread.CurrentThread.Name,
-                    vallet
-                };
-                var name = Thread.CurrentThread.Name;
                 foreach (var each in data)
                     baseList[index + 1].Add(each);
                 baseList[index + 1].Add(DateTime.Now.ToString("dd.MM HH:mm:ss"));

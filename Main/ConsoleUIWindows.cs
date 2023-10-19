@@ -92,10 +92,9 @@ namespace Arcam.Main
                     else
                         Console.Write(" ");
                 Console.CursorLeft = dataStart - 1;
-                //TODO: FIX THIS
-                //var indics = sere.GetIndicators();
-                //foreach (var each in indics)
-                //    Console.Write($"║{each.Key} ");
+                var indics = sere.GetIndicators();
+                foreach (var each in indics)
+                    Console.Write($"║{each.Key} ");
                 Console.Write("║");
                 Console.CursorLeft = buffer - 19;
                 Console.Write("Last update        ");
