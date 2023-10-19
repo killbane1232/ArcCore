@@ -34,7 +34,7 @@ namespace Arcam.Main
         {
             if (ConsoleUI.test)
                 return;
-            if (ConsoleUI.isLinux)
+            if (!ConsoleUI.isLinux)
                 return;
 
             lock (locker)
