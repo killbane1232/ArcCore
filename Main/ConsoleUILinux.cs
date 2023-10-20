@@ -13,6 +13,8 @@ namespace Arcam.Main
         static int printCnt = 0;
         const string date = "Last update";
         const string valletStr = "Vallet";
+        static int maxName = 0;
+        static int maxVallet = 6;
         public static void PrepareMenu(List<string> names)
         {
             ConsoleUI.size = names.Count;
@@ -29,15 +31,21 @@ namespace Arcam.Main
                 ClientThreadPool.setLastResponse();
                 printCnt++;
                 Dictionary<string, string>? currentThreadDict = null;
-                if (!baseList.ContainsKey(Thread.CurrentThread.Name ?? ""))
+                var curName = Thread.CurrentThread.Name ?? "";
+                if (!baseList.ContainsKey(curName))
                 {
                     currentThreadDict = new Dictionary<string, string>();
-                    currentThreadDict.Add(valletStr, vallet);
-                    baseList[Thread.CurrentThread.Name ?? ""] = currentThreadDict;
+                    baseList[curName] = currentThreadDict;
+                    if (maxName < curName.Length)
+                        maxName = curName.Length;
                 }
                 else
-                    currentThreadDict = baseList[Thread.CurrentThread.Name ?? ""];
+                    currentThreadDict = baseList[curName];
                 currentThreadDict[valletStr] = vallet;
+
+                if (maxVallet < vallet.Length)
+                    maxVallet = vallet.Length;
+
                 var indics = sere.GetIndicators();
                 foreach (var each in indics)
                 {
@@ -52,16 +60,7 @@ namespace Arcam.Main
 
                 if (printCnt % ConsoleUI.size == 0)
                 {
-                    var maxName = 0;
-                    var maxVallet = 6;
                     var str = new StringBuilder();
-                    for (var i = 0; i < ConsoleUI.size; i++)
-                    {
-                        if (maxName < namesList[i].Length)
-                            maxName = namesList[i].Length;
-                        if (baseList.ContainsKey(namesList[i]) && baseList[namesList[i]].ContainsKey(valletStr) && maxVallet < baseList[namesList[i]][valletStr].Length)
-                            maxVallet = baseList[namesList[i]][valletStr].Length;
-                    }
                     str.Append(new string(' ', maxName)).Append("║").Append("Vallet");
                     if (maxVallet > 6)
                     {
@@ -87,19 +86,22 @@ namespace Arcam.Main
                         str.Append($"║{each.Value[date]}\n");
                     }
                     Console.WriteLine(str.ToString());
-                    if (ConsoleUI.needStatus > -1)
+                    if (ConsoleUI.needStatus.Count > 0)
                     {
                         try
                         {
                             str.Insert(0, "<pre>\n");
                             str.Append("</pre>\n");
-                            TelegramLogger.bot.SendMdTableMessage(str.ToString(), ConsoleUI.needStatus);
+                            for (var i = 0; i < ConsoleUI.needStatus.Count; i++)
+                            {
+                                TelegramLogger.bot.SendMdTableMessage(str.ToString(), ConsoleUI.needStatus[i]);
+                            }
                         }
                         catch
                         {
 
                         }
-                        ConsoleUI.needStatus = -1;
+                        ConsoleUI.needStatus = new List<long>();
                     }
                 }
             }

@@ -12,10 +12,10 @@ namespace Arcam.Main
         public delegate void Print(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere);
         public static Prepare PrepareMenu = (names) => { };
         public static Print PrintData = (vallet, data, sere) => { };
-        public static long needStatus = -1;
+        public static List<long> needStatus = new List<long>();
         public static void CheckStatus(long id)
         {
-            needStatus = id;
+            needStatus.Add(id);
         }
     }
 }
