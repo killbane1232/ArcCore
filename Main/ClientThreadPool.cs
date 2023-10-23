@@ -7,11 +7,11 @@ namespace Arcam.Main
     public class ClientThreadPool
     {
         static object locker = new object();
-        static List<string> threadNames;
-        static List<DateTime> lastResponse;
-        List<Task> threads;
+        static List<string> threadNames = new List<string>();
+        static List<DateTime> lastResponse = new List<DateTime>();
+        List<Task> threads = new List<Task>();
         List<CancellationTokenSource> cancellationToken;
-        List<string> names;
+        List<string> names = new List<string>();
         IIndicatorsSerializer sere;
         Type platformType;
         Logger logger = new Logger(typeof(ClientThreadPool));
@@ -21,13 +21,9 @@ namespace Arcam.Main
             this.platformType = platformType;
             this.workerType = workerType;
             this.sere = sere;
-            threads = new List<Task>();
-            lastResponse = new List<DateTime> ();
             cancellationToken = new List<CancellationTokenSource>();
-            names = new List<string>();
             var directoryFiles = Directory.EnumerateFiles("./api");
             sere.LoadIndicator();
-            threadNames = new List<string>();
             foreach (var file in directoryFiles)
             {
                 if (!File.Exists(file))
@@ -66,7 +62,7 @@ namespace Arcam.Main
                 threads.Add(thread);
                 names.Add(file);
                 threadNames.Add(info.Name);
-                logger.Info("Started thread " + names[^1]);
+                logger.Info("Started thread " + threadNames[^1]);;
             }
             ConsoleUI.PrepareMenu(threadNames);
         }
