@@ -133,6 +133,9 @@ namespace Arcam.Main
                 {
                     task.Wait();
                 }
+                catch (OperationCanceledException ex)
+                {
+                }
                 catch (Exception ex)
                 {
                     logger.Error(ex);
