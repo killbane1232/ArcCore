@@ -58,7 +58,7 @@ namespace Arcam.Main
                 }
                 currentThreadDict[date] = DateTime.Now.ToString("dd.MM HH:mm:ss");
 
-                if (printCnt % ConsoleUI.size == 0)
+                if (printCnt % ConsoleUI.size == 0 && ConsoleUI.needStatus.Count > 0)
                 {
                     var str = new StringBuilder();
                     str.Append(new string(' ', maxName)).Append("║").Append("Vallet");
@@ -85,9 +85,9 @@ namespace Arcam.Main
                             str.Append("║" + each.Value[keysList[i]] + new string(' ', keysList[i].Length - each.Value[keysList[i]].Length));
                         str.Append($"║{each.Value[date]}\n");
                     }
-                    Console.WriteLine(str.ToString());
-                    if (ConsoleUI.needStatus.Count > 0)
-                    {
+                    //Console.WriteLine(str.ToString());
+                    //if (ConsoleUI.needStatus.Count > 0)
+                    //{
                         try
                         {
                             str.Insert(0, "<pre>\n");
@@ -102,7 +102,7 @@ namespace Arcam.Main
 
                         }
                         ConsoleUI.needStatus = new List<long>();
-                    }
+                    //}
                 }
             }
         }

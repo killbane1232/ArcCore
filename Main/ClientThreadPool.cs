@@ -48,7 +48,14 @@ namespace Arcam.Main
                 var thread = new Task(() =>
                 {
                     Thread.CurrentThread.Name = info.Name;
-                    worker.WorkerPreparer();
+                    try
+                    {
+                        worker.WorkerPreparer();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex);
+                    }
                 }, tokenSource.Token);
                 lastResponse.Add(DateTime.Now);
                 cancellationToken.Add(tokenSource);
@@ -125,13 +132,20 @@ namespace Arcam.Main
                 {
                     task.Wait();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    //Console.WriteLine($"Error thrown with message: {e.Message}");
+                    logger.Error(ex);
                 }
                 finally
                 {
-                    each.Dispose();
+                    try
+                    {
+                        each.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex);
+                    }
                 }
             }
         }
