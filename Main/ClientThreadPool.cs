@@ -141,6 +141,10 @@ namespace Arcam.Main
                 }
                 catch (AggregateException ex)
                 {
+                    ex.Handle(ex => {
+                        logger.Error(ex);
+                        return true; 
+                    });
                 }
                 catch (Exception ex)
                 {
