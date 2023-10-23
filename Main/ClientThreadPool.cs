@@ -52,6 +52,9 @@ namespace Arcam.Main
                     {
                         worker.WorkerPreparer();
                     }
+                    catch (OperationCanceledException ex)
+                    {
+                    }
                     catch (Exception ex)
                     {
                         logger.Error(ex);
@@ -134,6 +137,9 @@ namespace Arcam.Main
                     task.Wait();
                 }
                 catch (OperationCanceledException ex)
+                {
+                }
+                catch (AggregateException ex)
                 {
                 }
                 catch (Exception ex)
