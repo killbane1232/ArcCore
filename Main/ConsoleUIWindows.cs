@@ -29,7 +29,7 @@ namespace Arcam.Main
 
             lock (locker)
             {
-                ClientThreadPool.setLastResponse();
+                ClientThreadPool.SetLastResponse();
                 printCnt++;
                 Dictionary<string, string>? currentThreadDict = null;
                 var curName = Thread.CurrentThread.Name ?? "";

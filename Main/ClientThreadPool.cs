@@ -74,7 +74,7 @@ namespace Arcam.Main
             {
                 var each = cancellationToken[i];
                 var task = threads[i];
-                if (task.Status == TaskStatus.Faulted || task.Status == TaskStatus.Canceled || (DateTime.Now - lastResponse[i]).TotalMinutes > 1)
+                if (task.Status == TaskStatus.Faulted || task.Status == TaskStatus.RanToCompletion || task.Status == TaskStatus.Canceled || (DateTime.Now - lastResponse[i]).TotalMinutes > 1)
                 {
                     each.Cancel();
                     try
@@ -153,7 +153,7 @@ namespace Arcam.Main
                 }
             }
         }
-        public static void setLastResponse()
+        public static void SetLastResponse()
         {
             lock (locker)
             {
