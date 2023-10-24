@@ -7,17 +7,17 @@ namespace Arcam.Data
     {
         public static void SavePositions(Dictionary<string, PositionInfo> positions)
         {
-            if (!Directory.Exists("./save"))
-                _ = Directory.CreateDirectory("./save");
+            if (!Directory.Exists(Constants.TempDirectory))
+                _ = Directory.CreateDirectory(Constants.TempDirectory);
 
-            var fileName = $"./save/{Thread.CurrentThread.Name}pos.txt";
+            var fileName = $"{Constants.TempDirectory}/{Thread.CurrentThread.Name}pos.txt";
 
             File.WriteAllText(fileName, JsonConvert.SerializeObject(positions));
         }
 
         public static Dictionary<string, PositionInfo> ReadPositions()
         {
-            var fileName = $"./save/{Thread.CurrentThread.Name}pos.txt";
+            var fileName = $"{Constants.TempDirectory}/{Thread.CurrentThread.Name}pos.txt";
             _ = new Dictionary<string, PositionInfo>();
             Dictionary<string, PositionInfo> positions = new Dictionary<string, PositionInfo>();
             if (File.Exists(fileName))

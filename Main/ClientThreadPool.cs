@@ -46,15 +46,15 @@ namespace Arcam.Main
                     Thread.CurrentThread.Name = info.Name;
                     try
                     {
-                        worker.WorkerPreparer();
+                        worker.Start();
                     }
-                    catch (OperationCanceledException ex)
+                    catch (OperationCanceledException)
                     {
                     }
                     catch (Exception ex)
                     {
                         logger.Error(ex);
-                        throw ex;
+                        throw;
                     }
                 }, tokenSource.Token);
                 lastResponse.Add(DateTime.Now);
@@ -101,7 +101,7 @@ namespace Arcam.Main
                         task = new Task(() =>
                         {
                             Thread.CurrentThread.Name = info.Name;
-                            worker.WorkerPreparer();
+                            worker.Start();
                         }, tokenSource.Token);
                         cancellationToken[i] = tokenSource;
                         task.Start();
@@ -132,7 +132,7 @@ namespace Arcam.Main
                 {
                     task.Wait();
                 }
-                catch (OperationCanceledException ex)
+                catch (OperationCanceledException)
                 {
                 }
                 catch (AggregateException ex)

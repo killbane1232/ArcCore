@@ -1,4 +1,6 @@
-﻿namespace Arcam.Main.Loggers
+﻿using Arcam.Data;
+
+namespace Arcam.Main.Loggers
 {
     internal class FileLogger : ILogger
     {
@@ -21,7 +23,7 @@
             {
                 //if (isDebug)
                 //    return;
-                var writer = new StreamWriter($"./logs/{Thread.CurrentThread.Name} {DateTime.Now.ToLocalTime().ToShortDateString().Replace('/', '.')}-Debug.txt", true);
+                var writer = new StreamWriter($"{Constants.LogDirectory}/{Thread.CurrentThread.Name} {DateTime.Now.ToLocalTime().ToShortDateString().Replace('/', '.')}-Debug.txt", true);
                 writer.WriteLine($"[{baseName} {DateTime.Now.ToString(format)}]-(Debug) \"{data}\"");
                 writer.Close();
             }
@@ -36,7 +38,7 @@
             {
                 //if (isDebug)
                 //    return;
-                var writer = new StreamWriter($"./logs/{Thread.CurrentThread.Name} {DateTime.Now.ToLocalTime().ToShortDateString().Replace('/', '.')}-Debug.txt", true);
+                var writer = new StreamWriter($"{Constants.LogDirectory}/{Thread.CurrentThread.Name} {DateTime.Now.ToLocalTime().ToShortDateString().Replace('/', '.')}-Debug.txt", true);
                 writer.WriteLine($"[{baseName} {DateTime.Now.ToString(format)}]-(Debug {symbol}) \"{data}\"");
                 writer.Close();
             }
@@ -67,7 +69,7 @@
             {
                 //if (isDebug)
                 //    return;
-                var writer = new StreamWriter($"./logs/{Thread.CurrentThread.Name} {DateTime.Now.ToLocalTime().ToShortDateString().Replace('/', '.')}.txt", true);
+                var writer = new StreamWriter($"{Constants.LogDirectory}/{Thread.CurrentThread.Name} {DateTime.Now.ToLocalTime().ToShortDateString().Replace('/', '.')}.txt", true);
                 writer.WriteLine($"[{baseName} {DateTime.Now.ToString(format)}]-({type}) \"{data}\"");
                 writer.Close();
             }
@@ -82,7 +84,7 @@
             {
                 //if (isDebug)
                 //    return;
-                var writer = new StreamWriter($"./logs/{Thread.CurrentThread.Name} {DateTime.Now.ToLocalTime().ToShortDateString().Replace('/', '.')}.txt", true);
+                var writer = new StreamWriter($"{Constants.LogDirectory}/{Thread.CurrentThread.Name} {DateTime.Now.ToLocalTime().ToShortDateString().Replace('/', '.')}.txt", true);
                 writer.WriteLine($"[{baseName} {DateTime.Now.ToString(format)}]-({type} {symbol}) \"{data}\"");
                 writer.Close();
             }

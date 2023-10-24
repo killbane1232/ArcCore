@@ -1,10 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
 
 namespace Arcam.Data
 {
@@ -13,7 +7,7 @@ namespace Arcam.Data
         public void SaveUsers(Dictionary<long, long> Users)
         {
             string json = JsonConvert.SerializeObject(Users);
-            using (StreamWriter sw = new StreamWriter("users.json"))
+            using (StreamWriter sw = new StreamWriter($"{Constants.TempDirectory}/users.json"))
             {
                 sw.WriteLine(json);
             }
@@ -22,11 +16,11 @@ namespace Arcam.Data
         public Dictionary<long, long>? ReadUsers()
         {
             string json;
-            if (!System.IO.File.Exists("users.json"))
+            if (!System.IO.File.Exists($"{Constants.TempDirectory}/users.json"))
             {
                 return new Dictionary<long, long>();
             }
-            using (StreamReader sr = new StreamReader("users.json"))
+            using (StreamReader sr = new StreamReader($"{Constants.TempDirectory}/users.json"))
             {
                 json = sr.ReadToEnd();
             }

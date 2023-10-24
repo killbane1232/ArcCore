@@ -89,10 +89,10 @@ namespace Arcam.Main.Loggers
         }
         public void Error(object data)
         {
-            string res = data.ToString();
+            string res = data.ToString() ?? "";
             if (data is Exception)
             {
-                res = GetErrorString(data as Exception);
+                res = GetErrorString(data as Exception ?? new Exception());
             }
             foreach (var logger in loggers)
             {
@@ -108,10 +108,10 @@ namespace Arcam.Main.Loggers
         }
         public void Error(string symbol, object data)
         {
-            string res = data.ToString();
+            string res = data.ToString() ?? "";
             if (data is Exception)
             {
-                res = GetErrorString(data as Exception);
+                res = GetErrorString(data as Exception ?? new Exception());
             }
             foreach (var logger in loggers)
             {
@@ -129,7 +129,7 @@ namespace Arcam.Main.Loggers
         {
             var str = new StringBuilder();
             str.Append($"{ex.GetType().ToString()}: {ex.Message}\n");
-            var arr = ex.StackTrace.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            var arr = (ex.StackTrace ?? "").Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             var i = 0;
             while (i < arr.Length && !arr[i].Contains("Arcam")) i++;
             for (; i < arr.Length; i++)

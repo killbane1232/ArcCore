@@ -1,12 +1,11 @@
-﻿using Arcam.Data.DataTypes;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Arcam.Data
 {
     public class DataSerializer<T>
     {
         public List<T>? Data;
-        private string fileName = "./config/baddates.config";
+        private string fileName = $"{Constants.ConfigDirectory}/baddates.config";
         public DataSerializer()
         {
             if (!File.Exists(fileName))

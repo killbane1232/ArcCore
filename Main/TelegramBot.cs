@@ -18,11 +18,11 @@ namespace Arcam.Main
         public TelegramBot()
         {
             var token = "";
-            if (System.IO.File.Exists("./config/telegram.config"))
+            if (System.IO.File.Exists($"{Constants.ConfigDirectory}/telegram.config"))
             {
-                using (var reader = new StreamReader("./config/telegram.config"))
+                using (var reader = new StreamReader($"{Constants.ConfigDirectory}/telegram.config"))
                 {
-                    token = reader.ReadLine();
+                    token = reader.ReadLine() ?? "";
                 }
             }
             this.token = token;
