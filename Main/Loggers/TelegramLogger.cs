@@ -1,6 +1,4 @@
-﻿using Arcam.Data;
-
-namespace Arcam.Main.Loggers
+﻿namespace Arcam.Main.Loggers
 {
     class TelegramLogger : ILogger
     {
