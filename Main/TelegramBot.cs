@@ -61,9 +61,6 @@ namespace Arcam.Main
             };
             Console.WriteLine(errorMessage);
 
-            Thread.Sleep(1000);
-            client = new TelegramBotClient(token);
-            client.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), null, cts.Token);
             return Task.CompletedTask;
         }
 
