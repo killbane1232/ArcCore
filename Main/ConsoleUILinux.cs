@@ -69,7 +69,7 @@ namespace Arcam.Main
                     for (var i = 0; i < keysList.Count; i++)
                         str.Append($"║{keysList[i]}");
                     str.Append($"║{date}\n");
-                    foreach (var each in baseList)
+                    foreach (var each in baseList.OrderBy(x=>x.Key))
                     {
                         str.Append(each.Key);
                         if (each.Key.Length < maxName)
