@@ -4,6 +4,8 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bots.Http;
+using Telegram.Bots.Types.Stickers;
 
 namespace Arcam.Main
 {
@@ -86,7 +88,6 @@ namespace Arcam.Main
                     }
                     break;
                 case "/stop":
-
                     Users.Remove(msg.From.Id);
                     result = client.SendTextMessageAsync(msg.Chat.Id,
                         "Регистрация успешно удалена.");
@@ -97,6 +98,10 @@ namespace Arcam.Main
                     result = client.SendTextMessageAsync(msg.Chat.Id,
                         "Статус запрошен.");
                     break;
+                default:
+                    client.SendStickerAsync(msg.From.Id, InputFile.FromFileId("CAACAgIAAxkBAAIBmWFf8Ia0tHtyLUI9Pg2cfe2Pz87tAAIuAwACtXHaBqoozbmcyVK2IQQ"));
+                    break;
+
             }
 
             return result;
