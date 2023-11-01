@@ -4,6 +4,6 @@
     {
         public string ApiKey = "";
         public string ApiSecret = "";
-        public Dictionary<string, int> Leverage = new Dictionary<string, int>();
+        public Dictionary<string, int> Leverage = new();
     }
 }
