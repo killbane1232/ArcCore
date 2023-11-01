@@ -54,7 +54,6 @@ namespace Arcam.Main
                     catch (Exception ex)
                     {
                         logger.Error(ex);
-                        throw;
                     }
                 }, tokenSource.Token);
                 lastResponse.Add(DateTime.Now);
@@ -82,7 +81,6 @@ namespace Arcam.Main
                     }
                     catch
                     {
-                        //Console.WriteLine($"Error thrown with message: {e.Message}");
                     }
                     finally
                     {

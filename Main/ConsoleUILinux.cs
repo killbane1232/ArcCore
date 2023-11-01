@@ -7,24 +7,22 @@ namespace Arcam.Main
     public class ConsoleUILinux
     {
         static object locker = new object();
-        public static List<string> keysList = new List<string>();
-        public static List<string> namesList = new List<string>();
-        public static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
+        static List<string> keysList = new List<string>();
+        static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
         static int printCnt = 0;
-        const string date = "Last update";
-        const string valletStr = "Vallet";
         static int maxName = 0;
         static int maxVallet = 6;
-        public static void PrepareMenu(List<string> names)
+        internal static void PrepareMenu(List<string> names)
         {
             ConsoleUI.size = names.Count;
-            namesList = names;
         }
 
-        public static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
+        internal static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
         {
             if (ConsoleUI.test)
                 return;
+            string date = "Last update";
+            string valletStr = "Vallet";
 
             lock (locker)
             {
@@ -69,7 +67,7 @@ namespace Arcam.Main
                     for (var i = 0; i < keysList.Count; i++)
                         str.Append($"║{keysList[i]}");
                     str.Append($"║{date}\n");
-                    foreach (var each in baseList.OrderBy(x=>x.Key))
+                    foreach (var each in baseList.OrderBy(x => x.Key))
                     {
                         str.Append(each.Key);
                         if (each.Key.Length < maxName)
@@ -85,24 +83,20 @@ namespace Arcam.Main
                             str.Append("║" + each.Value[keysList[i]] + new string(' ', keysList[i].Length - each.Value[keysList[i]].Length));
                         str.Append($"║{each.Value[date]}\n");
                     }
-                    //Console.WriteLine(str.ToString());
-                    //if (ConsoleUI.needStatus.Count > 0)
-                    //{
-                        try
+                    try
+                    {
+                        str.Insert(0, "<pre>\n");
+                        str.Append("</pre>\n");
+                        for (var i = 0; i < ConsoleUI.needStatus.Count; i++)
                         {
-                            str.Insert(0, "<pre>\n");
-                            str.Append("</pre>\n");
-                            for (var i = 0; i < ConsoleUI.needStatus.Count; i++)
-                            {
-                                TelegramLogger.bot.SendMdTableMessage(str.ToString(), ConsoleUI.needStatus[i]);
-                            }
+                            TelegramLogger.bot.SendMdTableMessage(str.ToString(), ConsoleUI.needStatus[i]);
                         }
-                        catch
-                        {
+                    }
+                    catch
+                    {
 
-                        }
-                        ConsoleUI.needStatus = new List<long>();
-                    //}
+                    }
+                    ConsoleUI.needStatus = new List<long>();
                 }
             }
         }

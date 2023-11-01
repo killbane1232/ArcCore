@@ -8,17 +8,7 @@ namespace Arcam.Main.Loggers
         List<ILogger> loggers = new List<ILogger>();
         List<Type> types = new List<Type>() { typeof(ConsoleLogger), typeof(FileLogger), typeof(TelegramLogger) };
 
-        public Logger(Type ShortFileName)
-        {
-            foreach (var type in types)
-            {
-                try
-                {
-                    loggers.Add((ILogger)type.GetConstructors().First(x => x.GetParameters().Any(y => y.ParameterType == typeof(Type))).Invoke(new object[] { ShortFileName }));
-                }
-                catch { }
-            }
-        }
+        public Logger(Type ShortFileName) : this(ShortFileName.Name) { }
 
         public Logger(string name)
         {

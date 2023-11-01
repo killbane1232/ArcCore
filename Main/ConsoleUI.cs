@@ -10,8 +10,8 @@ namespace Arcam.Main
         public static bool isLinux = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         public delegate void Prepare(List<string> size);
         public delegate void Print(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere);
-        public static Prepare PrepareMenu = (names) => { };
-        public static Print PrintData = (vallet, data, sere) => { };
+        public static Prepare PrepareMenu = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ConsoleUILinux.PrepareMenu : ConsoleUIWindows.PrepareMenu;
+        public static Print PrintData = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ConsoleUILinux.PrintData : ConsoleUIWindows.PrintData;
         public static List<long> needStatus = new List<long>();
         public static void CheckStatus(long id)
         {

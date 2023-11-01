@@ -2,15 +2,11 @@
 {
     class TelegramLogger : ILogger
     {
-        public static TelegramBot bot = new TelegramBot();
+        public static TelegramBot bot = TelegramBot.getInstance();
         string baseName;
         private readonly string format = "HH:mm:ss.ffffzzz";
         public static bool isDebug = false;
 
-        public TelegramLogger(Type ShortFileName)
-        {
-            baseName = ShortFileName.Name;
-        }
         public TelegramLogger(string name)
         {
             baseName = name;

@@ -8,24 +8,22 @@ namespace Arcam.Main
     public class ConsoleUIWindows
     {
         static object locker = new object();
-        public static List<string> keysList = new List<string>();
-        public static List<string> namesList = new List<string>();
-        public static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
+        static List<string> keysList = new List<string>();
+        static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
         static int printCnt = 0;
-        const string date = "Last update";
-        const string valletStr = "Vallet";
         static int maxName = 0;
         static int maxVallet = 6;
-        public static void PrepareMenu(List<string> names)
+        internal static void PrepareMenu(List<string> names)
         {
             ConsoleUI.size = names.Count;
-            namesList = names;
         }
 
-        public static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
+        internal static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
         {
             if (ConsoleUI.test)
                 return;
+            string date = "Last update";
+            string valletStr = "Vallet";
 
             lock (locker)
             {
@@ -86,6 +84,7 @@ namespace Arcam.Main
                             str.Append("║" + each.Value[keysList[i]] + new string(' ', keysList[i].Length - each.Value[keysList[i]].Length));
                         str.Append($"║{each.Value[date]}\n");
                     }
+                    Console.Clear();
                     Console.WriteLine(str.ToString());
                     if (ConsoleUI.needStatus.Count > 0)
                     {

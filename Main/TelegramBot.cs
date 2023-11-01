@@ -15,9 +15,15 @@ namespace Arcam.Main
         private TelegramBotClient client;
         private Dictionary<long, long> Users { get; set; } = new Dictionary<long, long>();
         private TelegramUserSerializer serializer;
-        private string token;
+        private static TelegramBot? bot;
+        public static TelegramBot getInstance()
+        {
+            if (bot == null)
+                bot = new TelegramBot();
+            return bot;
+        }
 
-        public TelegramBot()
+        private TelegramBot()
         {
             var token = "";
             if (System.IO.File.Exists($"{Constants.ConfigDirectory}/telegram.config"))
@@ -27,7 +33,6 @@ namespace Arcam.Main
                     token = reader.ReadLine() ?? "";
                 }
             }
-            this.token = token;
             cts = new CancellationTokenSource();
             client = new TelegramBotClient(token);
             serializer = new TelegramUserSerializer();

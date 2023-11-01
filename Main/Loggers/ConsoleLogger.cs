@@ -6,11 +6,6 @@
         private readonly string format = "HH:mm:ss.ffffzzz";
         public static bool isDebug = false;
 
-        public ConsoleLogger(Type ShortFileName)
-        {
-            baseName = ShortFileName.Name;
-        }
-
         public ConsoleLogger(string name)
         {
             baseName = name;

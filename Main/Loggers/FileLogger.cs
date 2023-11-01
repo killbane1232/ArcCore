@@ -8,11 +8,6 @@ namespace Arcam.Main.Loggers
         private readonly string format = "HH:mm:ss.ffffzzz";
         public static bool isDebug = false;
 
-        public FileLogger(Type ShortFileName)
-        {
-            baseName = ShortFileName.Name;
-        }
-
         public FileLogger(string name)
         {
             baseName = name;
