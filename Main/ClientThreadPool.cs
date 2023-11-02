@@ -92,10 +92,10 @@ namespace Arcam.Main
                             throw new Exception("No constructor for Platform " + platformType.Name);
                         IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { lines[0], lines[1] });
                         var tokenSource = new CancellationTokenSource();
-                        var constructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(int), typeof(IIndicatorsSerializer) });
+                        var constructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(IIndicatorsSerializer) });
                         if (constructor == null)
                             throw new Exception("No constructor for Worker " + workerType.Name);
-                        var worker = (Worker)constructor.Invoke(new object[] { platform, tokenSource.Token, threads.Count, sere });
+                        var worker = (Worker)constructor.Invoke(new object[] { platform, tokenSource.Token, sere });
                         task = new Task(() =>
                         {
                             Thread.CurrentThread.Name = info.Name;

@@ -1,12 +1,20 @@
-﻿namespace Arcam.Data.DataTypes
+﻿using Newtonsoft.Json;
+
+namespace Arcam.Data.DataTypes
 {
     public class Candle
     {
-        public double high;
-        public double low;
-        public double open;
-        public double close;
-        public double volume;
-        public DateTime timestamp;
+        [JsonProperty("high")]
+        public double High;
+        [JsonProperty("low")]
+        public double Low;
+        [JsonProperty("open")]
+        public double Open;
+        [JsonProperty("close")]
+        public double Close;
+        [JsonProperty("volume")]
+        public double Volume;
+        [JsonProperty("timestamp")]
+        public DateTime TimeStamp;
     }
 }

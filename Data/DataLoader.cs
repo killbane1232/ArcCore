@@ -1,5 +1,6 @@
 ﻿using Arcam.Data.DataTypes;
 using Arcam.Market;
+using System.Diagnostics;
 
 namespace Arcam.Data
 {
@@ -32,13 +33,14 @@ namespace Arcam.Data
             var candles = new List<Candle>();
             var time = new DateTimeOffset(new DateTime(2019, 1, 1));
             time = time.AddMinutes(480);
-            var cnt = (DateTimeOffset.UtcNow - time).TotalMinutes;
+            var cnt = (long)Math.Floor((DateTimeOffset.UtcNow - time).TotalMinutes);
+            Stopwatch stopwatch = Stopwatch.StartNew();
             while (time.AddMinutes(480) < DateTimeOffset.UtcNow)
             {
                 Console.SetCursorPosition(0, 0);
                 if (candles.Count / (double)cnt * 100f > 97)
                     Console.WriteLine();
-                var percentage = Math.Round(candles.Count / (double)cnt * 100f, 2);
+                var percentage = candles.Count / (double)cnt * 100f;
                 int perCnt = (int)percentage / 2;
                 Console.Write('[');
                 for (int i = 0; i < perCnt; i++)
@@ -49,7 +51,12 @@ namespace Arcam.Data
                 {
                     Console.Write(' ');
                 }
-                Console.WriteLine($"] {percentage}% ");
+                Console.WriteLine($"] {percentage.ToString("00.00")}% ");
+                var timeToWin = new DateTime();
+
+                if (candles.Count>0)
+                    timeToWin = timeToWin.AddMilliseconds(stopwatch.ElapsedMilliseconds * ((cnt - candles.Count) / candles.Count ));
+                Console.WriteLine(timeToWin + " Left  ");
 
                 var range = platform.TakeCandles(symbol, 480, -2, where: time);
                 while (range.Count != 480)

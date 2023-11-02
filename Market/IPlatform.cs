@@ -4,7 +4,6 @@ namespace Arcam.Market
 {
     public interface IPlatform
     {
-        string GetPositions();
         List<Candle> TakeCandles(string symbol, int count, int timeSpan, bool reverse = false, DateTimeOffset? where = null);
         string ClosePosition(string symbol);
         string PostOrders(bool buy, int quality, string symbol);

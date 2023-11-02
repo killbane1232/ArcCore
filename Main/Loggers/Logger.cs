@@ -12,6 +12,8 @@ namespace Arcam.Main.Loggers
 
         public Logger(string name)
         {
+            if (isDebug)
+                return;
             foreach (var type in types)
             {
                 try
