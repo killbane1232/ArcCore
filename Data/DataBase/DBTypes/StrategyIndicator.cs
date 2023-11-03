@@ -8,11 +8,11 @@ namespace Arcam.Data.DataBase.DBTypes
     {
         [Column("id")]
         public long Id { get; set; }
-        [Column("strategy_id")]
-        [ForeignKey("strategy_id")]
+        [Column("strategy_id"), ForeignKey("strategy_id")]
+        public long StrategyId { get; set; }
         public virtual Strategy Strategy { get; set; }
-        [Column("indicator_id")]
-        [ForeignKey("indicator_id")]
+        [Column("indicator_id"), ForeignKey("indicator_id")]
+        public long IndicatorId { get; set; }
         public virtual Indicator Indicator { get; set; }
         [Column("is_exit")]
         public int? IsExit { get; set; }

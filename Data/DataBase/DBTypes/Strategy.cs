@@ -9,19 +9,19 @@ namespace Arcam.Data.DataBase.DBTypes
         public long Id { get; set; }
         [Column("name")]
         public string Name { get; set; }
-        [Column("author_id")]
-        [ForeignKey("author_id")]
+        [Column("author_id"), ForeignKey("author_id")]
+        public virtual long AuthorId { get; set; }
         public virtual User Author { get; set; }
-        [Column("moduser_id")]
-        [ForeignKey("moduser_id")]
+        [Column("moduser_id"), ForeignKey("moduser_id")]
+        public long ModUserId { get; set; }
         public virtual User ModUser { get; set; }
         [Column("is_public")]
         public int IsPublic { get; set; }
-        [Column("pair_id")]
-        [ForeignKey("pair_id")]
+        [Column("pair_id"), ForeignKey("pair_id")]
+        public  long PairId { get; set; }
         public virtual WorkingPair Pair { get; set; }
-        [Column("timing_id")]
-        [ForeignKey("timing_id")]
+        [Column("timing_id"), ForeignKey("timing_id")]
+        public  long TimingId { get; set; }
         public virtual Timing Timing { get; set; }
         [Column("long_avail")]
         public int IsLong { get; set; }

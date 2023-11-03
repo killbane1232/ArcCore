@@ -7,7 +7,8 @@ namespace Arcam.Data.DataBase.DBTypes
     {
         [Column("id")]
         public long Id { get; set; }
-        [ForeignKey("strategy_id")]
+        [Column("strategy_id"), ForeignKey("strategy_id")]
+        public virtual long StrategyId { get; set; }
         public virtual Strategy Strategy { get; set; }
     }
 }

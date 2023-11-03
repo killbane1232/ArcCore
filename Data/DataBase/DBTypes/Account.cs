@@ -5,12 +5,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Arcam.Data.DataBase.DBTypes
 {
     [Table("account")]
-    [PrimaryKey(nameof(User), nameof(Platform))]
+    [PrimaryKey(nameof(UserId), nameof(PlatformId))]
     public class Account
     {
-        [Required, Column("user_id")]
+        [Column("user_id"), ForeignKey("user_id")]
+        public long UserId { get; set; }
         public User User { get; set; }
-        [Required, Column("platform_id")]
+        [Column("platform_id"), ForeignKey("platform_id")]
+        public long PlatformId { get; set; }
         public Platform Platform { get; set; }
         [Column("created_at")]
         public DateTime? CreationDate { get; set; }

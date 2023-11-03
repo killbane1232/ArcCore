@@ -6,6 +6,7 @@
         public bool canShort = false;
         public int leverage = 0;
         public int timeSpan = 0;
+        public string pair = "";
         public List<IndicatorParams> indicators = new List<IndicatorParams>();
         public IndicatorParams this[string idx]
         {

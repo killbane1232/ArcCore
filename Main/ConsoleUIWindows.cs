@@ -13,10 +13,6 @@ namespace Arcam.Main
         static int printCnt = 0;
         static int maxName = 0;
         static int maxVallet = 6;
-        internal static void PrepareMenu(List<string> names)
-        {
-            ConsoleUI.size = names.Count;
-        }
 
         internal static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
         {
@@ -45,19 +41,18 @@ namespace Arcam.Main
                 if (maxVallet < vallet.Length)
                     maxVallet = vallet.Length;
 
-                var indics = sere.GetIndicators();
-                foreach (var each in indics)
+                foreach (var each in data)
                 {
                     if (!keysList.Contains(each.Key))
                     {
                         keysList.Add(each.Key);
                         keysList.Sort();
                     }
-                    currentThreadDict[each.Key] = data[each.Key];
+                    currentThreadDict[each.Key] = each.Value;
                 }
                 currentThreadDict[date] = DateTime.Now.ToString("dd.MM HH:mm:ss");
 
-                if (printCnt % ConsoleUI.size == 0)
+                if (printCnt % baseList.Count == 0)
                 {
                     var str = new StringBuilder();
                     str.Append(new string(' ', maxName)).Append("║").Append("Vallet");

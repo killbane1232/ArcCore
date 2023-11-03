@@ -9,5 +9,7 @@ namespace Arcam.Data.DataBase.DBTypes
         public long Id { get; set; }
         [Column("name")]
         public string Name { get; set; }
+        [Column("value")]
+        public int Value { get; set; }
     }
 }

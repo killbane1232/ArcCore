@@ -1,5 +1,6 @@
 ﻿using Arcam.Data.DataBase.DBTypes;
 using Microsoft.EntityFrameworkCore;
+using System.Transactions;
 
 namespace Arcam.Data.DataBase
 {
@@ -11,6 +12,7 @@ namespace Arcam.Data.DataBase
         public DbSet<FieldType> FieldType { get; set; }
         public DbSet<Indicator> Indicator { get; set; }
         public DbSet<IndicatorField> IndicatorField { get; set; }
+        public DbSet<InputField> InputField { get; set; }
         public DbSet<Platform> Platform { get; set; }
         public DbSet<Strategy> Strategy { get; set; }
         public DbSet<StrategyIndicator> StrategyIndicator { get; set; }
@@ -26,40 +28,17 @@ namespace Arcam.Data.DataBase
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //TODO: загрузка из конфига
+            var connection = "";
+            using (StreamReader reader = new StreamReader($"{Constants.ConfigDirectory}/sql.config"))
+            {
+                connection = reader.ReadLine() ?? "";
+            }
+
             optionsBuilder
-                //.UseLazyLoadingProxies()
-                .UseNpgsql();
+                .UseNpgsql(connection);
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Account>().Property(x => x.User).HasConversion(
-                User => User.Id,
-                x => (User)this.Find(typeof(User), x)
-                );
-            modelBuilder.Entity<Account>().Property(x => x.Platform).HasConversion(
-                User => User.Id,
-                x => (Platform)this.Find(typeof(Platform), x)
-                );
-            modelBuilder.Entity<ComparedFields>().Property(x => x.FieldA).HasConversion(
-                User => User.Id,
-                x => (IndicatorField)this.Find(typeof(IndicatorField), x)
-                );
-            modelBuilder.Entity<ComparedFields>().Property(x => x.FieldB).HasConversion(
-                User => User.Id,
-                x => (IndicatorField)this.Find(typeof(IndicatorField), x)
-                );
-            modelBuilder.Entity<ComparedFields>().Property(x => x.StrategyIndicator).HasConversion(
-                User => User.Id,
-                x => (StrategyIndicator)this.Find(typeof(StrategyIndicator), x)
-                );
-            modelBuilder.Entity<InputField>().Property(x => x.IndicatorField).HasConversion(
-                User => User.Id,
-                x => (IndicatorField)this.Find(typeof(IndicatorField), x)
-                );
-            modelBuilder.Entity<InputField>().Property(x => x.StrategyIndicator).HasConversion(
-                User => User.Id,
-                x => (StrategyIndicator)this.Find(typeof(StrategyIndicator), x)
-                );
         }
     }
 }
