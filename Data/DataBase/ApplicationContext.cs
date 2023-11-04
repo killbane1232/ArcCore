@@ -1,6 +1,5 @@
 ﻿using Arcam.Data.DataBase.DBTypes;
 using Microsoft.EntityFrameworkCore;
-using System.Transactions;
 
 namespace Arcam.Data.DataBase
 {
@@ -36,9 +35,6 @@ namespace Arcam.Data.DataBase
 
             optionsBuilder
                 .UseNpgsql(connection);
-        }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
         }
     }
 }

@@ -1,12 +1,7 @@
 ﻿using Arcam.Data.DataBase;
 using Arcam.Data.DataBase.DBTypes;
-using Arcam.Indicators;
-using Arcam.Indicators.IndicatorsSerealizers;
 using Arcam.Main.Loggers;
 using Arcam.Market;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using System.Collections.Immutable;
 
 namespace Arcam.Main
 {
@@ -17,84 +12,26 @@ namespace Arcam.Main
         static Dictionary<string, DateTime> lastResponse = new Dictionary<string, DateTime>();
         Dictionary<string, Task> threads = new Dictionary<string, Task>();
         Dictionary<string, CancellationTokenSource> cancellationToken;
-        List<string> names = new List<string>();
         Logger logger = new Logger(typeof(ClientThreadPool));
         Type workerType;
+        Type platformType;
         public ClientThreadPool(Type workerType, Type platformType)
         {
             this.workerType = workerType;
+            this.platformType = platformType;
             cancellationToken = new Dictionary<string, CancellationTokenSource>();
-                using (ApplicationContext db = new ApplicationContext())
+            using (ApplicationContext db = new ApplicationContext())
             {
                 var WorkingPair = db.WorkingPair.ToList();
                 var users = db.User.ToList();
                 var InputField = db.InputField.ToList();
                 var accountsAll = db.Account.ToList();
-                    foreach (var eachAcc in accountsAll)
-                    {
-                        db.Entry(eachAcc).Reference(x => x.User).Load();
-                        var each = eachAcc.User;
-                        db.Entry(eachAcc).Reference(x => x.Strategy).Load();
-                        db.Entry(eachAcc).Reference(x => x.Platform).Load();
-                        //Type platformType = Type.GetType(eachAcc.Platform.ClassName);
-                        var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
-                        if (platformConstructor == null)
-                            throw new Exception("No constructor for Platform " + platformType.Name);
-                        IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { eachAcc.Platform.Url, eachAcc.key, eachAcc.secret });
-                        PairSetting setting = new PairSetting();
-                        var strategy = eachAcc.Strategy;
-                        db.Entry(strategy).Reference(x => x.Timing).Load();
-                        db.Entry(strategy).Reference(x => x.Pair).Load();
-                        setting.timeSpan = strategy.Timing.Value;
-                        setting.canLong = strategy.IsLong > 0;
-                        setting.canShort = strategy.IsShort > 0;
-                        setting.leverage = strategy.Leverage;
-                        setting.indicators = new List<IndicatorParams>();
-                        var indicators = db.StrategyIndicator.Where(x => x.Strategy == strategy).ToList();
-                        foreach (var indicator in indicators)
-                        {
-                            var param = new IndicatorParams();
-                            db.Entry(indicator).Reference(x => x.Indicator).Load();
-                            var fields = db.InputField.Where(x => x.StrategyIndicatorId == indicator.Id).ToList();
-                            foreach (var field in fields)
-                            {
-                                db.Entry(field).Reference(x => x.IndicatorField).Load();
-                                param.parameters[field.IndicatorField.Name] = field.IntValue.Value;
-                            }
-                            param.isExit = indicator.IsExit > 0;
-                            param.classname = indicator.Indicator.ClassName;
-                            param.name = indicator.Indicator.Name;
-                            setting.indicators.Add(param);
-                        }
-                        setting.pair = strategy.Pair.Name;
-                        var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(PairSetting) });
-                        if (workerConstructor == null)
-                            throw new Exception("No constructor for Worker " + workerType.Name);
-                        var tokenSource = new CancellationTokenSource();
-                        threadNames.Add(each.Name);
-                        var worker = (Worker)workerConstructor.Invoke(new object[] { platform, setting });
-                        var thread = new Task(() =>
-                        {
-                            Thread.CurrentThread.Name = each.Name;
-                            try
-                            {
-                                worker.Start();
-                            }
-                            catch (OperationCanceledException)
-                            {
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.Error(ex);
-                            }
-                        }, tokenSource.Token);
-                        lastResponse.Add(each.Name, DateTime.Now);
-                        cancellationToken.Add(each.Name, tokenSource);
-                        threads.Add(each.Name, thread);
-                        logger.Info("Started thread " + threadNames[^1]); ;
-                    }
+                foreach (var eachAcc in accountsAll)
+                {
+                    StartThread(eachAcc, db);
+                    logger.Info("Started thread " + threadNames[^1]);
                 }
-            
+            }
         }
 
         void CheckAndRestartThreads()
@@ -106,7 +43,27 @@ namespace Arcam.Main
                 db.Entry(wp).Reference(x => x.platform).Load();
                 Console.WriteLine(wp.platform.Name);
 
-                var users = db.User.ToList();
+                var users = db.Account.ToList();
+                foreach (var each in cancellationToken.Keys)
+                {
+                    if (!users.Any(x => x.Name == each))
+                    {
+                        cancellationToken[each].Cancel();
+                        try
+                        {
+                            threads[each].Wait();
+                        }
+                        catch
+                        {
+                        }
+                        finally
+                        {
+                            cancellationToken[each].Dispose();
+                        }
+                        cancellationToken.Remove(each);
+                        logger.Info("Stopped thread " + each);
+                    }
+                }
                 foreach (var each in users)
                 {
                     if (cancellationToken.ContainsKey(each.Name) && threads.ContainsKey(each.Name))
@@ -127,73 +84,67 @@ namespace Arcam.Main
                             {
                                 ct.Dispose();
                             }
+                            logger.Info("Stopped thread " + each.Name);
                         }
                         else
                             continue;
                     }
-                    var accounts = db.Account.Where(x => x.User.Id == each.Id).ToList();
-                    foreach (var eachAcc in accounts)
-                    {
-                        db.Entry(eachAcc).Reference(x => x.Strategy).Load();
-                        db.Entry(eachAcc).Reference(x => x.Platform).Load();
-                        Type platformType = Type.GetType(eachAcc.Platform.ClassName);
-                        var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
-                        if (platformConstructor == null)
-                            throw new Exception("No constructor for Platform " + platformType.Name);
-                        IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { eachAcc.Platform.Url, eachAcc.key, eachAcc.secret });
-                        PairSetting setting = new PairSetting();
-                        var strategy = eachAcc.Strategy;
-                        db.Entry(strategy).Reference(x => x.Timing).Load();
-                        db.Entry(strategy).Reference(x => x.Pair).Load();
-                        setting.timeSpan = strategy.Timing.Value;
-                        setting.canLong = strategy.IsLong > 0;
-                        setting.canShort = strategy.IsShort > 0;
-                        setting.leverage = strategy.Leverage;
-                        setting.indicators = new List<IndicatorParams>();
-                        var indicators = db.StrategyIndicator.Where(x => x.Strategy == strategy).ToList();
-                        foreach (var indicator in indicators)
-                        {
-                            var param = new IndicatorParams();
-                            db.Entry(indicator).Reference(x => x.Indicator).Load();
-                            var fields = db.InputField.Where(x => x.StrategyIndicator == indicator).ToList();
-                            foreach (var field in fields)
-                            {
-                                db.Entry(field).Reference(x => x.IndicatorField).Load();
-                                param.parameters[field.IndicatorField.Name] = field.IntValue.Value;
-                            }
-                            param.isExit = indicator.IsExit > 0;
-                            param.classname = indicator.Indicator.ClassName;
-                            param.name = indicator.Indicator.Name;
-                            setting.indicators.Add(param);
-                        }
-                        var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(PairSetting) });
-                        if (workerConstructor == null)
-                            throw new Exception("No constructor for Worker " + workerType.Name);
-                        var tokenSource = new CancellationTokenSource();
-                        threadNames.Add(strategy.Name);
-                        var worker = (Worker)workerConstructor.Invoke(new object[] { platform, setting });
-                        var thread = new Task(() =>
-                        {
-                            Thread.CurrentThread.Name = each.Name;
-                            try
-                            {
-                                worker.Start();
-                            }
-                            catch (OperationCanceledException)
-                            {
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.Error(ex);
-                            }
-                        }, tokenSource.Token);
-                        lastResponse.Add(each.Name, DateTime.Now);
-                        cancellationToken.Add(each.Name, tokenSource);
-                        threads.Add(each.Name, thread);
-                        logger.Info("Restarted thread " + threadNames[^1]); ;
-                    }
+                    StartThread(each, db);
+                    threads[each.Name].Start();
+                    logger.Info("Restarted thread " + each.Name);
                 }
             }
+        }
+
+        void StartThread(Account account, ApplicationContext db)
+        {
+            db.Entry(account).Reference(x => x.Strategy).Load();
+            db.Entry(account).Reference(x => x.Platform).Load();
+            //Type platformType = Type.GetType(eachAcc.Platform.ClassName);
+            var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
+            if (platformConstructor == null)
+                throw new Exception("No constructor for Platform " + platformType.Name);
+            IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { account.Platform.Url, account.Key, account.Secret });
+            var strategy = account.Strategy;
+            db.Entry(strategy).Reference(x => x.Timing).Load();
+            db.Entry(strategy).Reference(x => x.Pair).Load();
+            var indicators = db.StrategyIndicator.Where(x => x.Strategy == strategy).ToList();
+            foreach (var indicator in indicators)
+            {
+                db.Entry(indicator).Reference(x => x.Indicator).Load();
+                var fields = db.InputField.Where(x => x.StrategyIndicatorId == indicator.Id).ToList();
+                foreach (var field in fields)
+                {
+                    db.Entry(field).Reference(x => x.IndicatorField).Load();
+                    indicator.InputFields.Add(field.IndicatorField.CodeName, field);
+                }
+            }
+            strategy.StrategyIndicators = indicators;
+            var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(Strategy) });
+            if (workerConstructor == null)
+                throw new Exception("No constructor for Worker " + workerType.Name);
+            var tokenSource = new CancellationTokenSource();
+            threadNames.Add(account.Name);
+            var worker = (Worker)workerConstructor.Invoke(new object[] { platform, strategy });
+            var thread = new Task(() =>
+            {
+                try
+                {
+                    Thread.CurrentThread.Name = account.Name;
+                    worker.Start();
+                }
+                catch (OperationCanceledException ex)
+                {
+                    logger.Error(ex);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                }
+            }, tokenSource.Token);
+            lastResponse[account.Name] = DateTime.Now;
+            cancellationToken[account.Name] = tokenSource;
+            threads[account.Name] = thread;
         }
         public void Start()
         {

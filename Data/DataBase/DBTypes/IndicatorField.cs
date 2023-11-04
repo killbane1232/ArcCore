@@ -17,5 +17,7 @@ namespace Arcam.Data.DataBase.DBTypes
         public virtual FieldType FieldType { get; set; }
         [Column("is_input")]
         public int IsInput { get; set; }
+        [Column("code_name")]
+        public string CodeName { get; set; }
     }
 }

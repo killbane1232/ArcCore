@@ -4,10 +4,10 @@ using System.Diagnostics;
 
 namespace Arcam.Data
 {
-    public class DataLoader
+    public class TestDataLoader
     {
         IPlatform platform;
-        public DataLoader(IPlatform platform)
+        public TestDataLoader(IPlatform platform)
         {
             this.platform = platform;
         }

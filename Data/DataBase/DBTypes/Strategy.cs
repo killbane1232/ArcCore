@@ -29,5 +29,7 @@ namespace Arcam.Data.DataBase.DBTypes
         public int IsShort { get; set; }
         [Column("leverage")]
         public int Leverage { get; set; }
+        [NotMapped]
+        public List<StrategyIndicator> StrategyIndicators { get; set; }
     }
 }

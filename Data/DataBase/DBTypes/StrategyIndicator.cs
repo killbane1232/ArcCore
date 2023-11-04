@@ -16,5 +16,9 @@ namespace Arcam.Data.DataBase.DBTypes
         public virtual Indicator Indicator { get; set; }
         [Column("is_exit")]
         public int? IsExit { get; set; }
+        [NotMapped]
+        public Dictionary<string, InputField> InputFields = new Dictionary<string, InputField>();
+        [NotMapped]
+        public List<ComparedFields> ComparedFields = new List<ComparedFields>();
     }
 }

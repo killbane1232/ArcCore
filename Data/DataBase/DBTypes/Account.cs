@@ -19,8 +19,10 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("current_strategy"), ForeignKey("current_strategy")]
         public virtual Strategy Strategy { get; set; }
         [Column("key")]
-        public string key { get; set; }
+        public string Key { get; set; }
         [Column("secret")]
-        public string secret{ get; set; }
+        public string Secret{ get; set; }
+        [Column("name")]
+        public string Name { get; set; }
     }
 }
