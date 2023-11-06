@@ -26,7 +26,6 @@ namespace Arcam.Data.DataBase
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //TODO: загрузка из конфига
             var connection = "";
             using (StreamReader reader = new StreamReader($"{Constants.ConfigDirectory}/sql.config"))
             {

@@ -1,4 +1,5 @@
-﻿using Arcam.Data.DataTypes;
+﻿using Arcam.Data.DataBase.DBTypes;
+using Arcam.Data.DataTypes;
 using Arcam.Market;
 using System.Diagnostics;
 
@@ -7,13 +8,15 @@ namespace Arcam.Data
     public class TestDataLoader
     {
         IPlatform platform;
-        public TestDataLoader(IPlatform platform)
+        string symbol;
+        public TestDataLoader(Account account)
         {
-            this.platform = platform;
+            platform = (IPlatform)Type.GetType(account.Platform.ClassName).GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) }).Invoke(new object[] { account.Platform.Url, account.Key, account.Secret });
+            symbol = account.Strategy.Pair.Name;
         }
 
 
-        public List<Candle> GetData(string symbol)
+        public List<Candle> GetData()
         {
             var fileName = $"{symbol}TestData.tac";
             var serializer = new DataSerializer<Candle>(fileName);
@@ -21,14 +24,14 @@ namespace Arcam.Data
             var candles = serializer.Data;
             if (candles == null || candles.Count == 0)
             {
-                candles = DownloadData(symbol);
+                candles = DownloadData();
                 serializer.Data = candles;
                 serializer.SaveData();
             }
             return candles;
         }
 
-        private List<Candle> DownloadData(string symbol)
+        private List<Candle> DownloadData()
         {
             var candles = new List<Candle>();
             var time = new DateTimeOffset(new DateTime(2019, 1, 1));

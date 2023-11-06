@@ -1,5 +1,4 @@
-﻿using Arcam.Indicators.IndicatorsSerealizers;
-using Arcam.Main.Loggers;
+﻿using Arcam.Main.Loggers;
 using System.Text;
 
 namespace Arcam.Main
@@ -13,7 +12,7 @@ namespace Arcam.Main
         static int maxName = 0;
         static int maxVallet = 6;
 
-        internal static void PrintData(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere)
+        internal static void PrintData(string vallet, Dictionary<string, string> data)
         {
             if (ConsoleUI.test)
                 return;
@@ -40,8 +39,7 @@ namespace Arcam.Main
                 if (maxVallet < vallet.Length)
                     maxVallet = vallet.Length;
 
-                var indics = sere.GetIndicators();
-                foreach (var each in indics)
+                foreach (var each in data)
                 {
                     if (!keysList.Contains(each.Key))
                     {

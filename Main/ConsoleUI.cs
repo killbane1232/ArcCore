@@ -1,5 +1,4 @@
-﻿using Arcam.Indicators.IndicatorsSerealizers;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Arcam.Main
 {
@@ -8,7 +7,7 @@ namespace Arcam.Main
         public static bool test = false;
         public static bool isLinux = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         public delegate void Prepare(List<string> size);
-        public delegate void Print(string vallet, Dictionary<string, string> data, IIndicatorsSerializer sere);
+        public delegate void Print(string vallet, Dictionary<string, string> data);
         public static Print PrintData = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ConsoleUILinux.PrintData : ConsoleUIWindows.PrintData;
         public static List<long> needStatus = new List<long>();
         public static void CheckStatus(long id)

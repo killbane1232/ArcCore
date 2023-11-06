@@ -38,11 +38,6 @@ namespace Arcam.Main
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var wp = db.WorkingPair.Find(2L);
-                Console.WriteLine(wp.Name);
-                db.Entry(wp).Reference(x => x.platform).Load();
-                Console.WriteLine(wp.platform.Name);
-
                 var users = db.Account.ToList();
                 foreach (var each in cancellationToken.Keys)
                 {
