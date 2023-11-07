@@ -11,7 +11,7 @@ namespace Arcam.Data
         string symbol;
         public TestDataLoader(Account account)
         {
-            platform = (IPlatform)Type.GetType(account.Platform.ClassName).GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) }).Invoke(new object[] { account.Platform.Url, account.Key, account.Secret });
+            platform = (IPlatform)Type.GetType(account.Platform.ClassName)!.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) })!.Invoke(new object[] { account.Platform.Url, account.Key, account.Secret });
             symbol = account.Strategy.Pair.Name;
         }
 

@@ -4,15 +4,15 @@ namespace Arcam.Main
 {
     public class ConsoleUI
     {
-        public static bool test = false;
+        public static bool IsTest = false;
         public static bool isLinux = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         public delegate void Prepare(List<string> size);
         public delegate void Print(string vallet, Dictionary<string, string> data);
         public static Print PrintData = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ConsoleUILinux.PrintData : ConsoleUIWindows.PrintData;
-        public static List<long> needStatus = new List<long>();
+        public static List<long> NeedStatus = new();
         public static void CheckStatus(long id)
         {
-            needStatus.Add(id);
+            NeedStatus.Add(id);
         }
     }
 }

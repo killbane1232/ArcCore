@@ -4,8 +4,6 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bots.Http;
-using Telegram.Bots.Types.Stickers;
 
 namespace Arcam.Main
 {

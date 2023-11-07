@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
+#pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
 namespace Arcam.Data.DataBase.DBTypes
 {
     [Table("indicator_field")]
@@ -10,13 +11,13 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("name")]
         public string Name { get; set; }
         [Column("indicator_id"), ForeignKey("indicator_id")]
-        public virtual long IndicatorId { get; set; }
+        public long IndicatorId { get; set; }
         public virtual Indicator Indicator { get; set; }
         [Column("field_type_id"), ForeignKey("field_type_id")]
-        public virtual long FieldTypeId { get; set; }
+        public long FieldTypeId { get; set; }
         public virtual FieldType FieldType { get; set; }
         [Column("is_input")]
-        public int IsInput { get; set; }
+        public bool IsInput { get; set; }
         [Column("code_name")]
         public string CodeName { get; set; }
     }

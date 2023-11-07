@@ -2,7 +2,7 @@
 {
     internal class ConsoleLogger : ILogger
     {
-        string baseName;
+        private readonly string baseName;
         private readonly string format = "HH:mm:ss.ffffzzz";
         public static bool isDebug = false;
 

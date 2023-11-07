@@ -7,12 +7,12 @@ namespace Arcam.Main
 {
     public class ClientThreadPool
     {
-        static object locker = new object();
+        private static object locker = new();
         static List<string> threadNames = new List<string>();
         static Dictionary<string, DateTime> lastResponse = new Dictionary<string, DateTime>();
-        Dictionary<string, Task> threads = new Dictionary<string, Task>();
-        Dictionary<string, CancellationTokenSource> cancellationToken;
-        Logger logger = new Logger(typeof(ClientThreadPool));
+        private Dictionary<string, Task> threads = new Dictionary<string, Task>();
+        private Dictionary<string, CancellationTokenSource> cancellationToken;
+        private Logger logger = new Logger(typeof(ClientThreadPool));
         Type workerType;
         Type platformType;
         public ClientThreadPool(Type workerType, Type platformType)

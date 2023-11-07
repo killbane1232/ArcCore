@@ -5,16 +5,16 @@ namespace Arcam.Main
 {
     public class ConsoleUILinux
     {
-        static object locker = new object();
-        static List<string> keysList = new List<string>();
-        static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
-        static int printCnt = 0;
-        static int maxName = 0;
-        static int maxVallet = 6;
+        private static object locker = new object();
+        private static List<string> keysList = new List<string>();
+        private static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
+        private static int printCnt = 0;
+        private static int maxName = 0;
+        private static int maxVallet = 6;
 
         internal static void PrintData(string vallet, Dictionary<string, string> data)
         {
-            if (ConsoleUI.test)
+            if (ConsoleUI.IsTest)
                 return;
             string date = "Last update";
             string valletStr = "Vallet";
@@ -50,7 +50,7 @@ namespace Arcam.Main
                 }
                 currentThreadDict[date] = DateTime.Now.ToString("dd.MM HH:mm:ss");
 
-                if (printCnt % baseList.Count == 0 && ConsoleUI.needStatus.Count > 0)
+                if (printCnt % baseList.Count == 0 && ConsoleUI.NeedStatus.Count > 0)
                 {
                     var str = new StringBuilder();
                     str.Append(new string(' ', maxName)).Append("║").Append("Vallet");
@@ -81,16 +81,16 @@ namespace Arcam.Main
                     {
                         str.Insert(0, "<pre>\n");
                         str.Append("</pre>\n");
-                        for (var i = 0; i < ConsoleUI.needStatus.Count; i++)
+                        for (var i = 0; i < ConsoleUI.NeedStatus.Count; i++)
                         {
-                            TelegramLogger.bot.SendMdTableMessage(str.ToString(), ConsoleUI.needStatus[i]);
+                            TelegramLogger.bot.SendMdTableMessage(str.ToString(), ConsoleUI.NeedStatus[i]);
                         }
                     }
                     catch
                     {
 
                     }
-                    ConsoleUI.needStatus = new List<long>();
+                    ConsoleUI.NeedStatus = new List<long>();
                 }
             }
         }

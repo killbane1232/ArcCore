@@ -5,8 +5,8 @@ namespace Arcam.Main.Loggers
     public class Logger
     {
         public static bool isDebug = false;
-        List<ILogger> loggers = new List<ILogger>();
-        List<Type> types = new List<Type>() { typeof(ConsoleLogger), typeof(FileLogger), typeof(TelegramLogger) };
+        private readonly List<ILogger> loggers = new List<ILogger>();
+        private readonly List<Type> types = new List<Type>() { typeof(ConsoleLogger), typeof(FileLogger), typeof(TelegramLogger) };
 
         public Logger(Type ShortFileName) : this(ShortFileName.Name) { }
 

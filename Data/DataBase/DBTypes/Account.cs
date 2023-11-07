@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
+#pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
 namespace Arcam.Data.DataBase.DBTypes
 {
     [Table("account")]
@@ -9,10 +10,10 @@ namespace Arcam.Data.DataBase.DBTypes
     {
         [Column("user_id"), ForeignKey("user_id")]
         public long UserId { get; set; }
-        public User User { get; set; }
+        public virtual User User { get; set; }
         [Column("platform_id"), ForeignKey("platform_id")]
         public long PlatformId { get; set; }
-        public Platform Platform { get; set; }
+        public virtual Platform Platform { get; set; }
         [Column("created_at")]
         public DateTime? CreationDate { get; set; }
         [Column("current_strategy"), ForeignKey("current_strategy")]
