@@ -1,8 +1,7 @@
 ﻿using Arcam.Data.DataBase;
 using Arcam.Data.DataBase.DBTypes;
 using Arcam.Market;
-using NLog;
-
+using Microsoft.EntityFrameworkCore;
 namespace Arcam.Main
 {
     public class ClientThreadPool
@@ -38,10 +37,10 @@ namespace Arcam.Main
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var users = db.Account.ToList();
+                var accounts = db.Account.ToList();
                 foreach (var each in cancellationToken.Keys)
                 {
-                    if (!users.Any(x => x.Name == each))
+                    if (!accounts.Any(x => x.Name == each))
                     {
                         cancellationToken[each].Cancel();
                         try
@@ -59,7 +58,7 @@ namespace Arcam.Main
                         logger.Info("Stopped thread " + each);
                     }
                 }
-                foreach (var each in users)
+                foreach (var each in accounts)
                 {
                     if (cancellationToken.ContainsKey(each.Name) && threads.ContainsKey(each.Name))
                     {
@@ -103,8 +102,9 @@ namespace Arcam.Main
             var strategy = account.Strategy;
             db.Entry(strategy).Reference(x => x.Timing).Load();
             db.Entry(strategy).Reference(x => x.Pair).Load();
-            var indicators = db.StrategyIndicator.Where(x => x.Strategy == strategy).ToList();
-            foreach (var indicator in indicators)
+            db.Entry(strategy).Collection(x => x.StrategyIndicators).Load();
+
+            foreach (var indicator in strategy.StrategyIndicators)
             {
                 db.Entry(indicator).Reference(x => x.Indicator).Load();
                 var fields = db.InputField.Where(x => x.StrategyIndicatorId == indicator.Id).ToList();
@@ -114,7 +114,7 @@ namespace Arcam.Main
                     indicator.InputFields.Add(field.IndicatorField.CodeName, field);
                 }
             }
-            strategy.StrategyIndicators = indicators;
+
             var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(Strategy) });
             if (workerConstructor == null)
                 throw new Exception("No constructor for Worker " + workerType.Name);

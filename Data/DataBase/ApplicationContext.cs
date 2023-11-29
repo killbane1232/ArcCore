@@ -35,5 +35,13 @@ namespace Arcam.Data.DataBase
             optionsBuilder
                 .UseNpgsql(connection);
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Strategy>()
+                .HasMany(s => s.StrategyIndicators)
+                .WithOne(si => si.Strategy)
+                .HasForeignKey(si => si.StrategyId)
+                .HasPrincipalKey(s => s.Id);
+        }
     }
 }

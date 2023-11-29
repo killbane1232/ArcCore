@@ -30,7 +30,6 @@ namespace Arcam.Data.DataBase.DBTypes
         public bool IsShort { get; set; }
         [Column("leverage")]
         public int Leverage { get; set; }
-        [NotMapped]
-        public List<StrategyIndicator> StrategyIndicators { get; set; }
+        public List<StrategyIndicator> StrategyIndicators { get; set; } = new();
     }
 }
