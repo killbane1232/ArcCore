@@ -1,6 +1,7 @@
 ﻿using Arcam.Data.DataTypes;
 using Arcam.Main.Loggers;
 using Arcam.Data.DataBase.DBTypes;
+using NLog;
 
 namespace Arcam.Market
 {
@@ -14,7 +15,7 @@ namespace Arcam.Market
         protected Strategy _indicators = new Strategy();
         public CancellationToken ct;
         protected int index = 0;
-        protected Logger logger = new Logger(typeof(Worker));
+        protected Logger logger = LogManager.GetCurrentClassLogger();
 
         public abstract void Start();
     }

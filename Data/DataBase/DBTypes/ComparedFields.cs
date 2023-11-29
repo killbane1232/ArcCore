@@ -17,9 +17,8 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("strategy_indicator_id"), ForeignKey("strategy_indicator_id")]
         public long StrategyIndicatorId { get; set; }
         public virtual StrategyIndicator StrategyIndicator { get; set; }
-        [Column("field_a_to_b_comprassion_id")]
+        [Column("field_a_to_b_comprassion_id"), ForeignKey("field_a_to_b_comprassion_id")]
         public long CompareTypeId { get; set; }
-        [ForeignKey("field_a_to_b_comprassion_id")]
         public virtual CompareType CompareType { get; set; }
     }
 }

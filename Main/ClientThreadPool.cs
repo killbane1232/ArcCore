@@ -1,7 +1,7 @@
 ﻿using Arcam.Data.DataBase;
 using Arcam.Data.DataBase.DBTypes;
-using Arcam.Main.Loggers;
 using Arcam.Market;
+using NLog;
 
 namespace Arcam.Main
 {
@@ -12,7 +12,7 @@ namespace Arcam.Main
         static Dictionary<string, DateTime> lastResponse = new Dictionary<string, DateTime>();
         private Dictionary<string, Task> threads = new Dictionary<string, Task>();
         private Dictionary<string, CancellationTokenSource> cancellationToken;
-        private Logger logger = new Logger(typeof(ClientThreadPool));
+        private Logger logger = LogManager.GetCurrentClassLogger();
         Type workerType;
         Type platformType;
         public ClientThreadPool(Type workerType, Type platformType)
