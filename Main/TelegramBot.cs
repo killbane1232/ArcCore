@@ -97,7 +97,7 @@ namespace Arcam.Main
                     serializer.SaveUsers(Users);
                     break;
                 case "/status":
-                    ConsoleUI.CheckStatus(msg.From.Id);
+                    StatusBuffer.CheckStatus(msg.From.Id);
                     result = client.SendTextMessageAsync(msg.Chat.Id,
                         "Статус запрошен.");
                     break;
