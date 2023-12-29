@@ -6,7 +6,6 @@ namespace Arcam.Main.Loggers
     {
         public static void Configure()
         {
-
             LogManager.Setup().LoadConfiguration(builder => {
                 builder.ForLogger().FilterMinLevel(LogLevel.Info).WriteToConsole();
                 builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToFile(fileName: "file.txt");

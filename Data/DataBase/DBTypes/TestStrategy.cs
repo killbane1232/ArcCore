@@ -11,5 +11,7 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("strategy_id"), ForeignKey("strategy_id")]
         public virtual long StrategyId { get; set; }
         public virtual Strategy Strategy { get; set; }
+        [Column("date")]
+        public DateTime Date { get; set; }
     }
 }

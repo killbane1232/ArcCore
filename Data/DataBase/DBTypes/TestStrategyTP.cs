@@ -13,5 +13,7 @@ namespace Arcam.Data.DataBase.DBTypes
         public virtual TestStrategy TestStrategy { get; set; }
         [Column("is_open")]
         public bool IsOpen { get; set; }
+        [Column("date")]
+        public DateTime Date { get; set; }
     }
 }
