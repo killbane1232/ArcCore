@@ -16,5 +16,7 @@ namespace Arcam.Data.DataBase.DBTypes
         public string Password { get; set; }
         [Column("login")]
         public string Login { get; set; }
+        [Column("tgid")]
+        public long? TelegramId { get; set; } //TODO ???
     }
 }

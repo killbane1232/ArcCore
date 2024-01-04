@@ -10,9 +10,16 @@ namespace Arcam.Data.DataBase.DBTypes
         public long Id { get; set; }
         [Column("test_strategy_id"), ForeignKey("test_strategy_id")]
         public long TestStrategyId { get; set; }
+        [NotMapped]
         public virtual TestStrategy TestStrategy { get; set; }
         [Column("is_open")]
         public bool IsOpen { get; set; }
+        [Column("is_long")]
+        public bool IsLong { get; set; }
+        [Column("price")]
+        public double Price { get; set; }
+        [Column("vallet_percent")]
+        public double ValletPercent { get; set; }
         [Column("date")]
         public DateTime Date { get; set; }
     }

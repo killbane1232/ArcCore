@@ -10,8 +10,10 @@ namespace Arcam.Data.DataBase.DBTypes
         public long Id { get; set; }
         [Column("strategy_id"), ForeignKey("strategy_id")]
         public virtual long StrategyId { get; set; }
+        [NotMapped]
         public virtual Strategy Strategy { get; set; }
         [Column("date")]
         public DateTime Date { get; set; }
+        public List<TestStrategyTP> TestResultsList { get; set; }
     }
 }

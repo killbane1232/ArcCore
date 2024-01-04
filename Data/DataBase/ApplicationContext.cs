@@ -31,7 +31,7 @@ namespace Arcam.Data.DataBase
             {
                 connection = reader.ReadLine() ?? "";
             }
-
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             optionsBuilder
                 .UseNpgsql(connection);
         }
@@ -42,6 +42,12 @@ namespace Arcam.Data.DataBase
                 .WithOne(si => si.Strategy)
                 .HasForeignKey(si => si.StrategyId)
                 .HasPrincipalKey(s => s.Id);
+            modelBuilder.Entity<TestStrategy>()
+                .HasMany(s => s.TestResultsList)
+                .WithOne(si => si.TestStrategy)
+                .HasForeignKey(si => si.TestStrategyId)
+                .HasPrincipalKey(s => s.Id);
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
     }
 }
