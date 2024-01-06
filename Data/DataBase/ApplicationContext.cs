@@ -47,6 +47,11 @@ namespace Arcam.Data.DataBase
                 .WithOne(si => si.TestStrategy)
                 .HasForeignKey(si => si.TestStrategyId)
                 .HasPrincipalKey(s => s.Id);
+            modelBuilder.Entity<Indicator>()
+                .HasMany(s => s.indicatorFields)
+                .WithOne(si => si.Indicator)
+                .HasForeignKey(si => si.IndicatorId)
+                .HasPrincipalKey(s => s.Id);
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
     }

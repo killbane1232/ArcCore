@@ -12,5 +12,7 @@ namespace Arcam.Data.DataBase.DBTypes
         public string Name { get; set; }
         [Column("classname")]
         public string ClassName { get; set; }
+        [NotMapped]
+        public List<IndicatorField> indicatorFields { get; set; }
     }
 }

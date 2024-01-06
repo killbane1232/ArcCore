@@ -9,7 +9,7 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("id")]
         public long Id { get; set; }
         [Column("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
         [Column("author_id"), ForeignKey("author_id")]
         public virtual long AuthorId { get; set; }
         public virtual User Author { get; set; }
@@ -19,10 +19,10 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("is_public")]
         public bool IsPublic { get; set; }
         [Column("pair_id"), ForeignKey("pair_id")]
-        public long PairId { get; set; }
+        public long? PairId { get; set; }
         public virtual WorkingPair Pair { get; set; }
         [Column("timing_id"), ForeignKey("timing_id")]
-        public long TimingId { get; set; }
+        public long? TimingId { get; set; }
         public virtual Timing Timing { get; set; }
         [Column("long_avail")]
         public bool IsLong { get; set; }
