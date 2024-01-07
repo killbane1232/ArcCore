@@ -119,7 +119,7 @@ namespace Arcam.Main
                     break;
                 case "/test":
                     result = client.SendTextMessageAsync(msg.Chat.Id,
-                        "Выберите стратегию для тестирования:", replyMarkup: TestStratMenu(msg.Chat.Id));
+                        "Выберите стратегию для тестирования:", replyMarkup: AllStratsMenu(msg.Chat.Id));
                     UserState[msg.Chat.Id] = MenuItem.TestStrategy;
                     break;
                 case "/strategy_settings":
@@ -176,8 +176,8 @@ namespace Arcam.Main
         }
         public Task GetStrategy(Message msg)
         {
-            var keyboardList = new List<KeyboardButton>();
-            keyboardList.Add(new KeyboardButton("Back"));
+            var keyboardList = new List<List<KeyboardButton>>();
+            keyboardList.Add(new() { new KeyboardButton("Back") });
             if (msg.Text == "Back")
             {
                 UserState[msg.Chat.Id] = MenuItem.Main;
@@ -225,11 +225,11 @@ namespace Arcam.Main
                             curName = indic.Indicator.Name;
                             cur = 1;
                         }
-                        keyboardList.Add(new KeyboardButton(indic.Indicator.Name + ": " + cur));
+                        keyboardList.Add(new() { new KeyboardButton(indic.Indicator.Name + ": " + cur) });
                     }
                 }
             }
-            keyboardList.Add(new KeyboardButton("Add new"));
+            keyboardList.Add(new() { new KeyboardButton("Add new") });
             StrategyUserWorkingOn[userId] = strat;
             UserState[msg.Chat.Id] = MenuItem.SetupStrategy;
             return client.SendTextMessageAsync(msg.Chat.Id,
@@ -237,8 +237,8 @@ namespace Arcam.Main
         }
         public Task SetupStrategy(Message msg)
         {
-            var keyboardList = new List<KeyboardButton>();
-            keyboardList.Add(new KeyboardButton("Back"));
+            var keyboardList = new List<List<KeyboardButton>>();
+            keyboardList.Add(new() { new KeyboardButton("Back") });
             if (msg.Text == "Back")
             {
                 UserState[msg.Chat.Id] = MenuItem.GetStrategy;
@@ -251,7 +251,7 @@ namespace Arcam.Main
                 UserState[msg.Chat.Id] = MenuItem.AddIndicator;
                 using (ApplicationContext db = new ApplicationContext())
                 {
-                    db.Indicator.ToList().ForEach(x => keyboardList.Add(new KeyboardButton(x.Name)));
+                    db.Indicator.ToList().ForEach(x => keyboardList.Add(new() { new KeyboardButton(x.Name) }));
                 }
                 return client.SendTextMessageAsync(msg.Chat.Id,
                     "Выберите индикатор для добавления:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
@@ -275,7 +275,7 @@ namespace Arcam.Main
                 {
                     db.Entry(field).Reference(x => x.IndicatorField).Load();
                     indics[index].InputFields.Add(field.IndicatorField.CodeName, field);
-                    keyboardList.Add(new KeyboardButton(field.IndicatorField.Name + ": " + field.IntValue));
+                    keyboardList.Add(new() { new KeyboardButton(field.IndicatorField.Name + ": " + field.IntValue) });
                 }
                 return client.SendTextMessageAsync(msg.Chat.Id,
                     "Выберите поле для настройки:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
@@ -283,8 +283,8 @@ namespace Arcam.Main
         }
         public Task AddIndicator(Message msg)
         {
-            var keyboardList = new List<KeyboardButton>();
-            keyboardList.Add(new KeyboardButton("Back"));
+            var keyboardList = new List<List<KeyboardButton>>();
+            keyboardList.Add(new() { new KeyboardButton("Back") });
             if (msg.Text == "Back")
             {
                 UserState[msg.Chat.Id] = MenuItem.SetupStrategy;
@@ -307,7 +307,7 @@ namespace Arcam.Main
                 { 
                     if (x.IsInput == true) 
                     { 
-                        keyboardList.Add(new KeyboardButton(x.Name + ": " + 0));
+                        keyboardList.Add(new() { new KeyboardButton(x.Name + ": " + 0) });
                         var inputField = new InputField();
                         inputField.IndicatorField = x;
                         inputField.IndicatorFieldId = x.Id;
@@ -328,8 +328,8 @@ namespace Arcam.Main
         }
         public Task SetupField(Message msg)
         {
-            var keyboardList = new List<KeyboardButton>();
-            keyboardList.Add(new KeyboardButton("Back"));
+            var keyboardList = new List<List<KeyboardButton>>();
+            keyboardList.Add(new() { new KeyboardButton("Back") });
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
             if (msg.Text == "Back")
             {
@@ -359,8 +359,8 @@ namespace Arcam.Main
         }
         public Task SetupValue(Message msg)
         {
-            var keyboardList = new List<KeyboardButton>();
-            keyboardList.Add(new KeyboardButton("Back"));
+            var keyboardList = new List<List<KeyboardButton>>();
+            keyboardList.Add(new() { new KeyboardButton("Back") });
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
             if (msg.Text == "Back")
             {
@@ -388,6 +388,8 @@ namespace Arcam.Main
                     return client.SendTextMessageAsync(msg.Chat.Id,
                         "Неверное значение поля, попробуйте снова:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
                 }
+                var indicator = IndicatorUserWorkingOn[userId];
+                indicator.InputFields[field.IndicatorField.CodeName] = field;
                 db.Update(field);
                 db.SaveChanges();
             }
@@ -395,22 +397,22 @@ namespace Arcam.Main
             return client.SendTextMessageAsync(msg.Chat.Id,
                         "Значение внесено:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupField(userId)));
         }
-        public List<KeyboardButton> GetKeyboardSetupField(long userId)
+        public List<List<KeyboardButton>> GetKeyboardSetupField(long userId)
         {
             var indic = IndicatorUserWorkingOn[userId];
-            var result = new List<KeyboardButton>();
-            result.Add(new KeyboardButton("Back"));
+            var result = new List<List<KeyboardButton>>();
+            result.Add(new() { new KeyboardButton("Back") });
             foreach (var item in indic.InputFields)
             {
-                result.Add(new KeyboardButton(item.Value.IndicatorField.Name + ": " + item.Value.IntValue));
+                result.Add(new() { new KeyboardButton(item.Value.IndicatorField.Name + ": " + item.Value.IntValue) });
             }
             return result;
         }
-        public List<KeyboardButton> GetKeyboardSetupStrategy(long userId)
+        public List<List<KeyboardButton>> GetKeyboardSetupStrategy(long userId)
         {
             var strat = StrategyUserWorkingOn[userId];
-            var result = new List<KeyboardButton>();
-            result.Add(new KeyboardButton("Back"));
+            var result = new List<List<KeyboardButton>>();
+            result.Add(new() { new KeyboardButton("Back") });
 
             var cur = 1;
             var curName = "";
@@ -425,15 +427,14 @@ namespace Arcam.Main
                     curName = indic.Indicator.Name;
                     cur = 1;
                 }
-                result.Add(new KeyboardButton(indic.Indicator.Name + ": " + cur));
+                result.Add(new() { new KeyboardButton(indic.Indicator.Name + ": " + cur) });
             }
-            result.Add("Add new");
+            result.Add(new() { new KeyboardButton("Add new") });
             return result;
         }
         public Task TestStrategy(Message msg)
         {
             Strategy strat = null;
-            Account acc = null;
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -443,9 +444,6 @@ namespace Arcam.Main
                     return client.SendTextMessageAsync(msg.Chat.Id,
                         "Стратегии с таким названием не существует!");
                 }
-                acc = db.Account.Where(x => x.StrategyId == strat.Id && x.UserId == userId).First();
-                db.Entry(acc).Reference(x => x.Strategy).Load();
-                db.Entry(acc).Reference(x => x.Platform).Load();
                 //Type platformType = Type.GetType(eachAcc.Platform.ClassName);
                 db.Entry(strat).Reference(x => x.Timing).Load();
                 db.Entry(strat).Reference(x => x.Pair).Load();
@@ -462,17 +460,12 @@ namespace Arcam.Main
                     }
                 }
             }
-            if (acc == null)
-            {
-                return client.SendTextMessageAsync(msg.Chat.Id,
-                    "Аккаунт для данной стратегии не найден!", replyMarkup: new ReplyKeyboardRemove());
-            }
             Task result = Task.CompletedTask;
             if (picker != null)
             {
                 try
                 {
-                    var file = picker.PickIndicators(strat, acc);
+                    var file = picker.PickIndicators(strat, null);
                     using (Stream reader = System.IO.File.OpenRead(file))
                     {
                         client.SendDocumentAsync(msg.Chat.Id, InputFile.FromStream(stream: reader, fileName: "hamlet.csv"));
@@ -491,8 +484,8 @@ namespace Arcam.Main
 
         public IReplyMarkup TestStratMenu(long chatId)
         {
-            var keyboardList = new List<KeyboardButton>();
-            keyboardList.Add(new KeyboardButton("Back"));
+            var keyboardList = new List<List<KeyboardButton>>();
+            keyboardList.Add(new() { new KeyboardButton("Back") });
             var userId = Users.First(x => x.Value == chatId).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -500,7 +493,7 @@ namespace Arcam.Main
                 foreach (var acc in accs)
                 {
                     db.Entry(acc).Reference(x => x.Strategy).Load();
-                    keyboardList.Add(new KeyboardButton(acc.Strategy.Name));
+                    keyboardList.Add(new() { new KeyboardButton(acc.Strategy.Name) });
                 }
             }
 
@@ -509,15 +502,15 @@ namespace Arcam.Main
 
         public IReplyMarkup AllStratsMenu(long chatId)
         {
-            var keyboardList = new List<KeyboardButton>();
-            keyboardList.Add(new KeyboardButton("Back"));
+            var keyboardList = new List<List<KeyboardButton>>();
+            keyboardList.Add(new() { new KeyboardButton("Back") });
             var userId = Users.First(x => x.Value == chatId).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
                 var accs = db.Strategy.Where(x => x.AuthorId == userId && x.Name != null).ToList();
                 foreach (var acc in accs)
                 {
-                    keyboardList.Add(new KeyboardButton(acc.Name));
+                    keyboardList.Add(new() { new KeyboardButton(acc.Name) });
                 }
             }
 

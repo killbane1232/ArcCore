@@ -23,7 +23,7 @@ namespace Arcam.Data.DataBase.DBTypes
         public virtual WorkingPair Pair { get; set; }
         [Column("timing_id"), ForeignKey("timing_id")]
         public long? TimingId { get; set; }
-        public virtual Timing Timing { get; set; }
+        public virtual Timing? Timing { get; set; }
         [Column("long_avail")]
         public bool IsLong { get; set; }
         [Column("short_avail")]

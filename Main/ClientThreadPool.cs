@@ -19,12 +19,10 @@ namespace Arcam.Main
             this.workerType = workerType;
             this.platformType = platformType;
             cancellationToken = new Dictionary<string, CancellationTokenSource>();
+            logger.Info("Starting threads");
             using (ApplicationContext db = new ApplicationContext())
             {
-                var WorkingPair = db.WorkingPair.ToList();
-                var users = db.User.ToList();
-                var InputField = db.InputField.ToList();
-                var accountsAll = db.Account.ToList();
+                var accountsAll = db.Account.Where(x => x.IsActive == true).ToList();
                 foreach (var eachAcc in accountsAll)
                 {
                     StartThread(eachAcc, db);
@@ -37,7 +35,7 @@ namespace Arcam.Main
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var accounts = db.Account.ToList();
+                var accounts = db.Account.Where(x => x.IsActive == true).ToList();
                 foreach (var each in cancellationToken.Keys)
                 {
                     if (!accounts.Any(x => x.Name == each))
