@@ -16,7 +16,7 @@ namespace Arcam.Data
         public Dictionary<long, long>? ReadUsers()
         {
             string json;
-            if (!System.IO.File.Exists($"{Constants.TempDirectory}/users.json"))
+            if (!File.Exists($"{Constants.TempDirectory}/users.json"))
             {
                 return new Dictionary<long, long>();
             }

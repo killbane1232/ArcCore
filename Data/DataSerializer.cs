@@ -24,7 +24,6 @@ namespace Arcam.Data
             using (var f = new StreamReader(fileName))
             {
                 Data = JsonConvert.DeserializeObject<List<T>>(f.ReadToEnd() ?? string.Empty);
-                f.Close();
             }
         }
         public void SaveData()
@@ -32,7 +31,6 @@ namespace Arcam.Data
             using (var f = new StreamWriter(fileName))
             {
                 f.WriteLine(JsonConvert.SerializeObject(Data));
-                f.Close();
             }
         }
     }
