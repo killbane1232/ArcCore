@@ -109,7 +109,7 @@ namespace Arcam.Main
                 foreach (var field in fields)
                 {
                     db.Entry(field).Reference(x => x.IndicatorField).Load();
-                    indicator.InputFields.Add(field.IndicatorField.CodeName, field);
+                    indicator.InputFields[field.IndicatorField.CodeName] = field;
                 }
             }
 
