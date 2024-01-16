@@ -1,118 +1,148 @@
-﻿using Arcam.Indicators.IndicatorsSerealizers;
-using Arcam.Main.Loggers;
+﻿using Arcam.Data.DataBase;
+using Arcam.Data.DataBase.DBTypes;
 using Arcam.Market;
-
+using Microsoft.EntityFrameworkCore;
 namespace Arcam.Main
 {
     public class ClientThreadPool
     {
-        static object locker = new object();
+        private static object locker = new();
         static List<string> threadNames = new List<string>();
-        static List<DateTime> lastResponse = new List<DateTime>();
-        List<Task> threads = new List<Task>();
-        List<CancellationTokenSource> cancellationToken;
-        List<string> names = new List<string>();
-        IIndicatorsSerializer sere;
-        Type platformType;
-        Logger logger = new Logger(typeof(ClientThreadPool));
+        static Dictionary<string, DateTime> lastResponse = new Dictionary<string, DateTime>();
+        private Dictionary<string, Task> threads = new Dictionary<string, Task>();
+        private Dictionary<string, CancellationTokenSource> cancellationToken;
+        private Logger logger = LogManager.GetCurrentClassLogger();
         Type workerType;
-        public ClientThreadPool(IIndicatorsSerializer sere, Type platformType, Type workerType)
+        Type platformType;
+        public ClientThreadPool(Type workerType, Type platformType)
         {
-            this.platformType = platformType;
             this.workerType = workerType;
-            this.sere = sere;
-            cancellationToken = new List<CancellationTokenSource>();
-            var directoryFiles = Directory.EnumerateFiles("./api");
-            sere.LoadIndicator();
-            foreach (var file in directoryFiles)
+            this.platformType = platformType;
+            cancellationToken = new Dictionary<string, CancellationTokenSource>();
+            logger.Info("Starting threads");
+            using (ApplicationContext db = new ApplicationContext())
             {
-                if (!File.Exists(file))
-                    continue;
-                var info = new FileInfo(file);
-                var lines = File.ReadAllLines(file);
-                if (lines.Length < 2 || lines[0].Length < 24 || lines[1].Length < 48)
-                    continue;
-                var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string) });
-                if (platformConstructor == null)
-                    throw new Exception("No constructor for Platform " + platformType.Name);
-                IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { lines[0], lines[1] });
-                var tokenSource = new CancellationTokenSource();
-                var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(IIndicatorsSerializer) });
-                if (workerConstructor == null)
-                    throw new Exception("No constructor for Worker " + workerType.Name);
-                var worker = (Worker)workerConstructor.Invoke(new object[] { platform, tokenSource.Token, sere });
-                var thread = new Task(() =>
+                var accountsAll = db.Account.Where(x => x.IsActive == true).ToList();
+                foreach (var eachAcc in accountsAll)
                 {
-                    Thread.CurrentThread.Name = info.Name;
-                    try
-                    {
-                        worker.Start();
-                    }
-                    catch (OperationCanceledException)
-                    {
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex);
-                    }
-                }, tokenSource.Token);
-                lastResponse.Add(DateTime.Now);
-                cancellationToken.Add(tokenSource);
-                threads.Add(thread);
-                names.Add(file);
-                threadNames.Add(info.Name);
-                logger.Info("Started thread " + threadNames[^1]);;
+                    StartThread(eachAcc, db);
+                    logger.Info("Started thread " + threadNames[^1]);
+                }
             }
-            ConsoleUI.PrepareMenu(threadNames);
         }
 
         void CheckAndRestartThreads()
         {
-            for (var i = 0; i < cancellationToken.Count; i++)
+            using (ApplicationContext db = new ApplicationContext())
             {
-                var each = cancellationToken[i];
-                var task = threads[i];
-                if (task.Status == TaskStatus.Faulted || task.Status == TaskStatus.RanToCompletion || task.Status == TaskStatus.Canceled || (DateTime.Now - lastResponse[i]).TotalMinutes > 1)
+                var accounts = db.Account.Where(x => x.IsActive == true).ToList();
+                foreach (var each in cancellationToken.Keys)
                 {
-                    each.Cancel();
-                    try
+                    if (!accounts.Any(x => x.Name == each))
                     {
-                        task.Wait();
-                    }
-                    catch
-                    {
-                    }
-                    finally
-                    {
-                        each.Dispose();
-                        var info = new FileInfo(names[i]);
-                        var lines = File.ReadAllLines(names[i]);
-                        var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string) });
-                        if (platformConstructor == null)
-                            throw new Exception("No constructor for Platform " + platformType.Name);
-                        IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { lines[0], lines[1] });
-                        var tokenSource = new CancellationTokenSource();
-                        var constructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(CancellationToken), typeof(IIndicatorsSerializer) });
-                        if (constructor == null)
-                            throw new Exception("No constructor for Worker " + workerType.Name);
-                        var worker = (Worker)constructor.Invoke(new object[] { platform, tokenSource.Token, sere });
-                        task = new Task(() =>
+                        cancellationToken[each].Cancel();
+                        try
                         {
-                            Thread.CurrentThread.Name = info.Name;
-                            worker.Start();
-                        }, tokenSource.Token);
-                        cancellationToken[i] = tokenSource;
-                        task.Start();
-                        threads[i] = task;
-                        logger.Info("Restarted thread " + names[i]);
+                            threads[each].Wait();
+                        }
+                        catch
+                        {
+                        }
+                        finally
+                        {
+                            cancellationToken[each].Dispose();
+                        }
+                        cancellationToken.Remove(each);
+                        logger.Info("Stopped thread " + each);
                     }
                 }
+                foreach (var each in accounts)
+                {
+                    if (cancellationToken.ContainsKey(each.Name) && threads.ContainsKey(each.Name))
+                    {
+                        var ct = cancellationToken[each.Name];
+                        var task = threads[each.Name];
+                        if (task.Status == TaskStatus.Faulted || task.Status == TaskStatus.RanToCompletion || task.Status == TaskStatus.Canceled || (DateTime.Now - lastResponse[each.Name]).TotalMinutes > 1)
+                        {
+                            ct.Cancel();
+                            try
+                            {
+                                task.Wait();
+                            }
+                            catch
+                            {
+                            }
+                            finally
+                            {
+                                ct.Dispose();
+                            }
+                            logger.Info("Stopped thread " + each.Name);
+                        }
+                        else
+                            continue;
+                    }
+                    StartThread(each, db);
+                    threads[each.Name].Start();
+                    logger.Info("Restarted thread " + each.Name);
+                }
             }
+        }
+
+        void StartThread(Account account, ApplicationContext db)
+        {
+            db.Entry(account).Reference(x => x.Strategy).Load();
+            db.Entry(account).Reference(x => x.Platform).Load();
+            //Type platformType = Type.GetType(eachAcc.Platform.ClassName);
+            var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
+            if (platformConstructor == null)
+                throw new Exception("No constructor for Platform " + platformType.Name);
+            IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { account.Platform.Url, account.Key, account.Secret });
+            var strategy = account.Strategy;
+            db.Entry(strategy).Reference(x => x.Timing).Load();
+            db.Entry(strategy).Reference(x => x.Pair).Load();
+            db.Entry(strategy).Collection(x => x.StrategyIndicators).Load();
+
+            foreach (var indicator in strategy.StrategyIndicators)
+            {
+                db.Entry(indicator).Reference(x => x.Indicator).Load();
+                var fields = db.InputField.Where(x => x.StrategyIndicatorId == indicator.Id).ToList();
+                foreach (var field in fields)
+                {
+                    db.Entry(field).Reference(x => x.IndicatorField).Load();
+                    indicator.InputFields.Add(field.IndicatorField.CodeName, field);
+                }
+            }
+
+            var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(Strategy) });
+            if (workerConstructor == null)
+                throw new Exception("No constructor for Worker " + workerType.Name);
+            var tokenSource = new CancellationTokenSource();
+            threadNames.Add(account.Name);
+            var worker = (Worker)workerConstructor.Invoke(new object[] { platform, strategy });
+            var thread = new Task(() =>
+            {
+                try
+                {
+                    Thread.CurrentThread.Name = account.Name;
+                    worker.Start();
+                }
+                catch (OperationCanceledException ex)
+                {
+                    logger.Error(ex);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                }
+            }, tokenSource.Token);
+            lastResponse[account.Name] = DateTime.Now;
+            cancellationToken[account.Name] = tokenSource;
+            threads[account.Name] = thread;
         }
         public void Start()
         {
             foreach (var task in threads)
-                task.Start();
+                task.Value.Start();
             while (true)
             {
                 Thread.Sleep(30000);
@@ -121,14 +151,13 @@ namespace Arcam.Main
         }
         public void Stop()
         {
-            for (var i = 0; i < cancellationToken.Count; i++)
+            foreach (var task in threads)
             {
-                var each = cancellationToken[i];
-                var task = threads[i];
+                var each = cancellationToken[task.Key];
                 each.Cancel();
                 try
                 {
-                    task.Wait();
+                    task.Value.Wait();
                 }
                 catch (OperationCanceledException)
                 {
@@ -161,8 +190,7 @@ namespace Arcam.Main
         {
             lock (locker)
             {
-                var i = threadNames.FindIndex(x => x == Thread.CurrentThread.Name);
-                lastResponse[i] = DateTime.Now;
+                lastResponse[Thread.CurrentThread.Name??""] = DateTime.Now;
             }
         }
     }
