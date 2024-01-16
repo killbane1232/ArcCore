@@ -12,7 +12,9 @@ namespace Arcam.Main.Loggers
             {
                 bot.SendTextMessage($"{logEvent.LoggerName} {logEvent.FormattedMessage}");
             }
-            catch { }
+            catch (Exception e) {
+                Console.WriteLine(e);
+            }
         }
     }
 }
