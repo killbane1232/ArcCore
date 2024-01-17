@@ -52,7 +52,7 @@ namespace Arcam.Main
                 }
                 currentThreadDict[date] = DateTime.Now.ToString("dd.MM HH:mm:ss");
 
-                if ((printCnt ^ baseList.Count) == 0 && NeedStatus.Count > 0)
+                if ((printCnt % baseList.Count) == 0 && NeedStatus.Count > 0)
                 {
                     printCnt = 0;
                     var str = new StringBuilder();
