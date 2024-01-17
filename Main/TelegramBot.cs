@@ -23,6 +23,7 @@ namespace Arcam.Main
         private static TelegramBot? bot;
         private static Dictionary<long, MenuItem> UserState = new Dictionary<long, MenuItem>();
         public static IPicker picker = null;
+        private Logger logger = LogManager.GetCurrentClassLogger();
         public enum MenuItem
         {
             Start,
@@ -84,7 +85,7 @@ namespace Arcam.Main
                 ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
                 _ => exception.ToString()
             };
-            Console.WriteLine(errorMessage);
+            logger.Debug(errorMessage);
 
             return Task.CompletedTask;
         }
