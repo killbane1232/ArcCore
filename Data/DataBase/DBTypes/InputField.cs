@@ -18,5 +18,14 @@ namespace Arcam.Data.DataBase.DBTypes
         public float? FloatValue { get; set; }
         [Column("int_value")]
         public int? IntValue { get; set; }
+        public InputField CreateCopy(ApplicationContext db)
+        {
+            var field = new InputField();
+            field.IndicatorFieldId = IndicatorFieldId;
+            field.StrategyIndicatorId = StrategyIndicatorId;
+            field.IntValue = IntValue;
+            field.FloatValue = FloatValue;
+            return field;
+        }
     }
 }

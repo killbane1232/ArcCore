@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Buffers.Text;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Cryptography;
+using System.Text;
 
 #pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
 namespace Arcam.Data.DataBase.DBTypes
@@ -31,5 +34,48 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("leverage")]
         public int Leverage { get; set; }
         public List<StrategyIndicator> StrategyIndicators { get; set; } = new();
+        
+        public Strategy CreateCopy(ApplicationContext db)
+        {
+            var strat = new Strategy();
+            strat.Name = null;
+            strat.PairId = PairId;
+            strat.TimingId = TimingId;
+            strat.IsPublic = false;
+            strat.AuthorId = AuthorId;
+            strat.ModUserId = ModUserId;
+            strat.Leverage = Leverage;
+            db.Strategy.Add(strat);
+            db.SaveChanges();
+            foreach (var curindic in StrategyIndicators.OrderBy(x => x.IndicatorId).ThenBy(x => x.IsExit))
+            {
+                var cpy = curindic.CreateCopy(db, strat.Id);
+                db.StrategyIndicator.Update(cpy);
+                strat.StrategyIndicators.Add(cpy);
+            }
+            db.SaveChanges();
+
+            return strat;
+        }
+
+        public string GetHashCode()
+        {
+            var builder = new StringBuilder();
+            builder.Append(this.Leverage);
+            builder.Append(this.PairId);
+            builder.Append(this.TimingId);
+            foreach (var indic in StrategyIndicators.OrderBy(x => x.IndicatorId).ThenBy(x => x.IsExit))
+            {
+                builder.Append(indic.IndicatorId);
+                builder.Append(indic.IsExit);
+                foreach (var item in indic.InputFields.Values.OrderBy(x => x.IndicatorFieldId))
+                {
+                    builder.Append(item.IndicatorFieldId);
+                    builder.Append(item.IntValue);
+                    builder.Append(item.FloatValue ?? 0f);
+                }
+            }
+            return builder.ToString();
+        }
     }
 }
