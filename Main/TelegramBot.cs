@@ -508,7 +508,7 @@ namespace Arcam.Main
             var userId = Users.First(x => x.Value == chatId).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
-                var accs = db.Strategy.Where(x => x.AuthorId == userId && x.Name != null).ToList();
+                var accs = db.Strategy.Where(x => x.AuthorId == userId || userId == 1 && x.Name != null).ToList();
                 foreach (var acc in accs)
                 {
                     keyboardList.Add(new() { new KeyboardButton(acc.Name) });
