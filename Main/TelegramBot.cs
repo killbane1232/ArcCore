@@ -68,7 +68,16 @@ namespace Arcam.Main
             {
                 case UpdateType.Message:
                     if (update.Message != null && update.Message.Type == MessageType.Text)
-                        result = MessageHandler(update);
+                        try
+                        {
+                            result = MessageHandler(update);
+                        }
+                        catch (Exception ex) 
+                        {
+                            logger.Error(ex);
+                            result = client.SendTextMessageAsync(update.Message.Chat.Id,
+                                "Произошла какая-то ошибка!", replyMarkup: new ReplyKeyboardRemove());
+                        }
                     break;
                 default:
                     result = Task.CompletedTask;
