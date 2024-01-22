@@ -153,7 +153,11 @@ namespace Arcam.Main
                                 break;
                             }
                             result = client.SendTextMessageAsync(msg.Chat.Id,
-                                "Добро пожаловать!");
+                                "Добро пожаловать!\n" +
+                                "Для создания/изменения стратегии отправьте:\n" +
+                                "/strategy_settings\n" +
+                                "Для тестирования существующей стратегии отправьте:\n" +
+                                "/test");
                             UserState[msg.Chat.Id] = MenuItem.Main;
                             break;
                         case MenuItem.TestStrategy:
@@ -192,7 +196,10 @@ namespace Arcam.Main
             {
                 UserState[msg.Chat.Id] = MenuItem.Main;
                 return client.SendTextMessageAsync(msg.Chat.Id,
-                "Ok", replyMarkup: new ReplyKeyboardRemove());
+                    "Для создания/изменения стратегии отправьте:\n" +
+                    "/strategy_settings\n" +
+                    "Для тестирования существующей стратегии отправьте:\n" +
+                    "/test", replyMarkup: new ReplyKeyboardRemove());
             }
             Strategy strat = null;
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
@@ -444,7 +451,22 @@ namespace Arcam.Main
         }
         public Task TestStrategy(Message msg)
         {
+            if (msg.Text == "Back")
+            {
+                UserState[msg.Chat.Id] = MenuItem.Main;
+                return client.SendTextMessageAsync(msg.Chat.Id,
+                    "Для создания/изменения стратегии отправьте:\n" +
+                    "/strategy_settings\n" +
+                    "Для тестирования существующей стратегии отправьте:\n" +
+                    "/test", replyMarkup: new ReplyKeyboardRemove());
+            }
             Strategy strat = null;
+            if (!Users.ContainsValue(msg.Chat.Id))
+            {
+                return client.SendTextMessageAsync(msg.Chat.Id,
+                    "Необходимо проийти авторизацию отправьте:\n" +
+                    "/start", replyMarkup: new ReplyKeyboardRemove());
+            }
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
