@@ -476,6 +476,7 @@ namespace Arcam.Main
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex);
                     result = client.SendTextMessageAsync(msg.Chat.Id,
                         "Произошла какая-то ошибка!", replyMarkup: new ReplyKeyboardRemove());
                 }
