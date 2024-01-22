@@ -7,7 +7,6 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Arcam.Data.DataBase;
 using Arcam.Data.DataBase.DBTypes;
-using System.IO;
 
 namespace Arcam.Main
 {
@@ -309,7 +308,13 @@ namespace Arcam.Main
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
-                var indicator = db.Indicator.Where(x => x.Name == msg.Text).First();
+                var allIndics = db.Indicator.Where(x => x.Name == msg.Text);
+                if(allIndics.Count() == 0)
+                {
+                    return client.SendTextMessageAsync(msg.Chat.Id,
+                        "Указанный индикатор не найден!");
+                }
+                var indicator = allIndics.First();
                 db.Entry(indicator).Collection(x => x.indicatorFields).Load();
                 var strIndic = new StrategyIndicator();
                 strIndic.IndicatorId = indicator.Id;
@@ -388,14 +393,12 @@ namespace Arcam.Main
             using (ApplicationContext db = new ApplicationContext())
             {
                 var field = FieldUserWorkingOn[userId];
-                int intValue;
-                float floatValue;
-                if (int.TryParse(msg.Text!.Trim(), out intValue))
+                if (int.TryParse(msg.Text!.Trim(), out int intValue))
                 {
                     field.IntValue = intValue;
                     field.FloatValue = null;
                 }
-                else if (float.TryParse(msg.Text!.Trim(), out floatValue))
+                else if (float.TryParse(msg.Text!.Trim(), out float floatValue))
                 {
                     field.IntValue = null;
                     field.FloatValue = floatValue;
@@ -470,12 +473,13 @@ namespace Arcam.Main
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
-                strat = db.Strategy.Where(x => x.Name == msg.Text && x.AuthorId == userId).First();
-                if (strat == null)
+                var stratList = db.Strategy.Where(x => x.Name == msg.Text && (x.AuthorId == userId || userId == 1));
+                if (stratList.Count() == 0)
                 {
                     return client.SendTextMessageAsync(msg.Chat.Id,
                         "Стратегии с таким названием не существует!");
                 }
+                strat = stratList.First();
                 //Type platformType = Type.GetType(eachAcc.Platform.ClassName);
                 db.Entry(strat).Reference(x => x.Timing).Load();
                 db.Entry(strat).Reference(x => x.Pair).Load();
