@@ -496,11 +496,11 @@ namespace Arcam.Main
                     }
                 }
             }
-            Task result = Task.CompletedTask;
-            result = client.SendTextMessageAsync(msg.Chat.Id,
-                "Стратегия тестируется, пожалуйста подождите!", replyMarkup: new ReplyKeyboardRemove());
+            Task result;
             if (picker != null)
             {
+                result = client.SendTextMessageAsync(msg.Chat.Id,
+                    "Стратегия тестируется, пожалуйста подождите!", replyMarkup: new ReplyKeyboardRemove());
                 var task = new Thread(() =>
                 {
                     try
@@ -510,8 +510,8 @@ namespace Arcam.Main
                         using (Stream reader = System.IO.File.OpenRead(file))
                         {
                             docTask = client.SendDocumentAsync(msg.Chat.Id, InputFile.FromStream(stream: reader, fileName: "hamlet.csv"));
+                            docTask.Wait();
                         }
-                        docTask.Wait();
                         client.SendTextMessageAsync(msg.Chat.Id,
                             "Стратегия успешно протестирована!", replyMarkup: new ReplyKeyboardRemove());
                     }
