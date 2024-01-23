@@ -364,10 +364,13 @@ namespace Arcam.Main
                 using (ApplicationContext db = new ApplicationContext())
                 {
                     indicator.IsExit = !indicator.IsExit;
-                    db.Update(indicator);
+                    db.StrategyIndicator.Update(indicator);
                     db.SaveChanges();
+                    IndicatorUserWorkingOn[userId] = db.Entry(indicator).Entity;
+                    var indics = StrategyUserWorkingOn[userId].StrategyIndicators;
+                    indics[indics.FindIndex(x => x.Id == indicator.Id)] = IndicatorUserWorkingOn[userId];
                     return client.SendTextMessageAsync(msg.Chat.Id,
-                        "Индикатор используется для выхода: " + indicator.IsExit);
+                        "Индикатор используется для выхода: " + indicator.IsExit, replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupField(userId)));
                 }
             }
             using (ApplicationContext db = new ApplicationContext())
@@ -398,7 +401,7 @@ namespace Arcam.Main
             {
                 UserState[msg.Chat.Id] = MenuItem.SetupField;
                 client.SendTextMessageAsync(msg.Chat.Id,
-                        "Неверное значение поля, попробуйте снова:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupField(userId)));
+                        "Выберите индикатор для настройки или создайте новый:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupField(userId)));
             }
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -420,8 +423,9 @@ namespace Arcam.Main
                 }
                 var indicator = IndicatorUserWorkingOn[userId];
                 indicator.InputFields[field.IndicatorField.CodeName] = field;
-                db.Update(field);
+                db.InputField.Update(field);
                 db.SaveChanges();
+                FieldUserWorkingOn[userId] = db.Entry(field).Entity;
             }
             UserState[msg.Chat.Id] = MenuItem.SetupField;
             return client.SendTextMessageAsync(msg.Chat.Id,
@@ -432,7 +436,7 @@ namespace Arcam.Main
             var indic = IndicatorUserWorkingOn[userId];
             var result = new List<List<KeyboardButton>>();
             result.Add(new() { new KeyboardButton("Back") });
-            foreach (var item in indic.InputFields)
+            foreach (var item in indic.InputFields.OrderBy(x=>x.Value.IndicatorField.Name))
             {
                 result.Add(new() { new KeyboardButton(item.Value.IndicatorField.Name + ": " + item.Value.IntValue) });
             }
