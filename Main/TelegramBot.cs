@@ -204,7 +204,7 @@ namespace Arcam.Main
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
-                var strats = db.Strategy.Where(x => x.Name == msg.Text && x.AuthorId == userId);
+                var strats = db.Strategy.Where(x => x.Name == msg.Text && (x.AuthorId == userId || userId==1));
                 if (strats.Count() == 0)
                 {
                     strat = new Strategy
