@@ -5,7 +5,6 @@ namespace Arcam.Main
 {
     public class StatusBuffer
     {
-        public static bool IsTest = false;
         private static List<long> NeedStatus = new();
         private static object locker = new object();
         private static List<string> keysList = new List<string>();
@@ -16,8 +15,6 @@ namespace Arcam.Main
 
         public static void AddDataToBuffer(string vallet, Dictionary<string, string> data)
         {
-            if (IsTest)
-                return;
             string date = "Last update";
             string valletStr = "Vallet";
 
