@@ -497,24 +497,37 @@ namespace Arcam.Main
                 }
             }
             Task result = Task.CompletedTask;
+            result = client.SendTextMessageAsync(msg.Chat.Id,
+                "Стратегия тестируется, пожалуйста подождите!", replyMarkup: new ReplyKeyboardRemove());
             if (picker != null)
             {
-                try
+                var task = new Thread(() =>
                 {
-                    var file = picker.PickIndicators(strat, null);
-                    using (Stream reader = System.IO.File.OpenRead(file))
+                    try
                     {
-                        client.SendDocumentAsync(msg.Chat.Id, InputFile.FromStream(stream: reader, fileName: "hamlet.csv"));
+                        var file = picker.PickIndicators(strat, null);
+                        Task<Message> docTask = null;
+                        using (Stream reader = System.IO.File.OpenRead(file))
+                        {
+                            docTask = client.SendDocumentAsync(msg.Chat.Id, InputFile.FromStream(stream: reader, fileName: "hamlet.csv"));
+                        }
+                        docTask.Wait();
+                        client.SendTextMessageAsync(msg.Chat.Id,
+                            "Стратегия успешно протестирована!", replyMarkup: new ReplyKeyboardRemove());
                     }
-                    result = client.SendTextMessageAsync(msg.Chat.Id,
-                        "Стратегия успешно протестирована!", replyMarkup: new ReplyKeyboardRemove());
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex);
-                    result = client.SendTextMessageAsync(msg.Chat.Id,
-                        "Произошла какая-то ошибка!", replyMarkup: new ReplyKeyboardRemove());
-                }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex);
+                        client.SendTextMessageAsync(msg.Chat.Id,
+                            "Произошла какая-то ошибка!", replyMarkup: new ReplyKeyboardRemove());
+                    }
+                });
+                task.Start();
+            }
+            else
+            {
+                result = client.SendTextMessageAsync(msg.Chat.Id,
+                    "Произошла какая-то ошибка!", replyMarkup: new ReplyKeyboardRemove());
             }
             return result;
         }
