@@ -241,7 +241,7 @@ namespace Arcam.Main
                             curName = indic.Indicator.Name;
                             cur = 1;
                         }
-                        keyboardList.Add(new() { new KeyboardButton(indic.Indicator.Name + ": " + cur) });
+                        keyboardList.Add(new() { new KeyboardButton(indic.Indicator.Name + ": " + cur + (indic.IsExit ? " Exit" : "")) });
                     }
                 }
             }
