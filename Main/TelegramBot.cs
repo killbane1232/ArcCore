@@ -291,10 +291,9 @@ namespace Arcam.Main
                 {
                     db.Entry(field).Reference(x => x.IndicatorField).Load();
                     indics[index].InputFields.Add(field.IndicatorField.CodeName, field);
-                    keyboardList.Add(new() { new KeyboardButton(field.IndicatorField.Name + ": " + field.IntValue) });
                 }
                 return client.SendTextMessageAsync(msg.Chat.Id,
-                    "Выберите поле для настройки:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
+                    "Выберите поле для настройки:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupField(userId)));
             }
         }
         public Task AddIndicator(Message msg)
@@ -360,6 +359,17 @@ namespace Arcam.Main
                     "Выберите индикатор для настройки или создайте новый:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupStrategy(userId)));
             }
             var indicator = IndicatorUserWorkingOn[userId];
+            if (msg.Text.StartsWith("Use To Exit: "))
+            {
+                using (ApplicationContext db = new ApplicationContext())
+                {
+                    indicator.IsExit = !indicator.IsExit;
+                    db.Update(indicator);
+                    db.SaveChanges();
+                    return client.SendTextMessageAsync(msg.Chat.Id,
+                        "Индикатор используется для выхода: " + indicator.IsExit);
+                }
+            }
             using (ApplicationContext db = new ApplicationContext())
             {
                 var allFields = db.InputField.Where(x => x.StrategyIndicatorId == indicator.Id).ToList();
@@ -426,6 +436,7 @@ namespace Arcam.Main
             {
                 result.Add(new() { new KeyboardButton(item.Value.IndicatorField.Name + ": " + item.Value.IntValue) });
             }
+            result.Add(new() { new KeyboardButton("Use To Exit: " + indic.IsExit) });
             return result;
         }
         public List<List<KeyboardButton>> GetKeyboardSetupStrategy(long userId)
@@ -447,7 +458,7 @@ namespace Arcam.Main
                     curName = indic.Indicator.Name;
                     cur = 1;
                 }
-                result.Add(new() { new KeyboardButton(indic.Indicator.Name + ": " + cur) });
+                result.Add(new() { new KeyboardButton(indic.Indicator.Name + ": " + cur + (indic.IsExit ? " Exit" : "")) });
             }
             result.Add(new() { new KeyboardButton("Add new") });
             return result;
