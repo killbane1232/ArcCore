@@ -274,7 +274,7 @@ namespace Arcam.Main
             }
             var strat = StrategyUserWorkingOn[userId];
             var txtSplit = msg.Text.Split(": ");
-            var index = int.Parse(txtSplit[1]) - 1;
+            var index = int.Parse(txtSplit[1].Split(" ")[0]) - 1;
             using (ApplicationContext db = new ApplicationContext())
             {
                 var indicators = db.Indicator.Where(x => x.Name == txtSplit[0]);
