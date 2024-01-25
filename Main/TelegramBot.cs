@@ -7,6 +7,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Arcam.Data.DataBase;
 using Arcam.Data.DataBase.DBTypes;
+using Microsoft.EntityFrameworkCore;
 
 namespace Arcam.Main
 {
@@ -298,8 +299,6 @@ namespace Arcam.Main
         }
         public Task AddIndicator(Message msg)
         {
-            var keyboardList = new List<List<KeyboardButton>>();
-            keyboardList.Add(new() { new KeyboardButton("Back") });
             if (msg.Text == "Back")
             {
                 UserState[msg.Chat.Id] = MenuItem.SetupStrategy;
@@ -327,8 +326,7 @@ namespace Arcam.Main
                 indicator.indicatorFields.ForEach(x => 
                 { 
                     if (x.IsInput == true) 
-                    { 
-                        keyboardList.Add(new() { new KeyboardButton(x.Name + ": " + 0) });
+                    {
                         var inputField = new InputField();
                         inputField.IndicatorField = x;
                         inputField.IndicatorFieldId = x.Id;
@@ -345,7 +343,7 @@ namespace Arcam.Main
             }
             UserState[msg.Chat.Id] = MenuItem.SetupField;
             return client.SendTextMessageAsync(msg.Chat.Id,
-                "Индикатор добавлен!\nВыберите поля для настройки:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
+                "Индикатор добавлен!\nВыберите поля для настройки:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupField(userId)));
         }
         public Task SetupField(Message msg)
         {
@@ -359,6 +357,24 @@ namespace Arcam.Main
                     "Выберите индикатор для настройки или создайте новый:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupStrategy(userId)));
             }
             var indicator = IndicatorUserWorkingOn[userId];
+            if (msg.Text == "Remove")
+            {
+                using (ApplicationContext db = new ApplicationContext())
+                {
+                    var cnt = db.InputField.Where(x => x.StrategyIndicatorId == indicator.Id);
+                    if (cnt.Count() > 0)
+                        cnt.ExecuteDelete();
+                    db.StrategyIndicator.Where(x=>x.Id == indicator.Id).ExecuteDelete();
+                    db.SaveChanges();
+                }
+                var strat = StrategyUserWorkingOn[userId];
+                var index = strat.StrategyIndicators.FindIndex(x => x.Id == indicator.Id);
+                strat.StrategyIndicators.RemoveAt(index);
+                IndicatorUserWorkingOn[userId] = null;
+                UserState[msg.Chat.Id] = MenuItem.SetupStrategy;
+                return client.SendTextMessageAsync(msg.Chat.Id,
+                    "Выберите индикатор для настройки или создайте новый:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupStrategy(userId)));
+            }
             if (msg.Text.StartsWith("Use To Exit: "))
             {
                 using (ApplicationContext db = new ApplicationContext())
@@ -385,7 +401,7 @@ namespace Arcam.Main
                         FieldUserWorkingOn[userId] = field;
                         UserState[msg.Chat.Id] = MenuItem.SetupValue;
                         return client.SendTextMessageAsync(msg.Chat.Id,
-                "Поле выбрано!\nВведите значение поля:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
+                            "Поле выбрано!\nВведите значение поля:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
                     }
                 }
             }
@@ -440,6 +456,7 @@ namespace Arcam.Main
             {
                 result.Add(new() { new KeyboardButton(item.Value.IndicatorField.Name + ": " + item.Value.IntValue) });
             }
+            result.Add(new() { new KeyboardButton("Remove") });
             result.Add(new() { new KeyboardButton("Use To Exit: " + indic.IsExit) });
             return result;
         }
