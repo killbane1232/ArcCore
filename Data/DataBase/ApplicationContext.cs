@@ -20,6 +20,7 @@ namespace Arcam.Data.DataBase
         public DbSet<Timing> Timing { get; set; }
         public DbSet<User> User { get; set; }
         public DbSet<WorkingPair> WorkingPair { get; set; }
+        public DbSet<DBToken> Token { get; set; }
         public ApplicationContext()
         {
             Database.EnsureCreated();
