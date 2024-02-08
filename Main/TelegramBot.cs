@@ -606,8 +606,11 @@ namespace Arcam.Main
                 var admins = db.User.Where(x => x.Access == 0).ToList();
                 foreach (var item in admins)
                 {
-                    client.SendTextMessageAsync(Users[item.Id],
+                    if (Users.ContainsValue(item.Id))
+                    {
+                        client.SendTextMessageAsync(Users[item.Id],
                             message);
+                    }
                 }
             }
         }
