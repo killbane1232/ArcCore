@@ -8,7 +8,7 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("id")]
         public long Id { get; set; }
         [Column("token")]
-        public string Token { get; set; }
+        public string Token { get; set; } = "";
         [Column("user_id")]
         public long UserId { get; set; }
     }

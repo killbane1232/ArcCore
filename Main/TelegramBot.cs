@@ -22,7 +22,7 @@ namespace Arcam.Main
         private TelegramUserSerializer serializer;
         private static TelegramBot? bot;
         private static Dictionary<long, MenuItem> UserState = new Dictionary<long, MenuItem>();
-        public static IPicker picker = null;
+        public static IPicker? picker = null;
         private Logger logger = LogManager.GetCurrentClassLogger();
         public enum MenuItem
         {
@@ -146,7 +146,7 @@ namespace Arcam.Main
                     switch (UserState[msg.Chat.Id]) 
                     {
                         case MenuItem.Start:
-                            if(!UpdateUserTgId(msg.Text, msg.Chat.Id))
+                            if(!UpdateUserTgId(msg.Text!, msg.Chat.Id))
                             {
                                 result = client.SendTextMessageAsync(msg.Chat.Id,
                                     "Неверный логин");
@@ -201,7 +201,7 @@ namespace Arcam.Main
                     "Для тестирования существующей стратегии отправьте:\n" +
                     "/test", replyMarkup: new ReplyKeyboardRemove());
             }
-            Strategy strat = null;
+            Strategy? strat = null;
             var userId = Users.First(x => x.Value == msg.Chat.Id).Key;
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -274,7 +274,7 @@ namespace Arcam.Main
                     "Выберите индикатор для добавления:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
             }
             var strat = StrategyUserWorkingOn[userId];
-            var txtSplit = msg.Text.Split(": ");
+            var txtSplit = msg.Text!.Split(": ");
             var index = int.Parse(txtSplit[1].Split(" ")[0]) - 1;
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -291,7 +291,7 @@ namespace Arcam.Main
                 foreach (var field in fields)
                 {
                     db.Entry(field).Reference(x => x.IndicatorField).Load();
-                    indics[index].InputFields.Add(field.IndicatorField.CodeName, field);
+                    indics[index].InputFields.Add(field.IndicatorField.CodeName!, field);
                 }
                 return client.SendTextMessageAsync(msg.Chat.Id,
                     "Выберите поле для настройки:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupField(userId)));
@@ -334,7 +334,7 @@ namespace Arcam.Main
                         inputField.StrategyIndicatorId = strIndic.Id;
                         inputField.IntValue = 0;
                         inputField.FloatValue = 0;
-                        strIndic.InputFields.Add(x.CodeName, inputField);
+                        strIndic.InputFields.Add(x.CodeName!, inputField);
                         db.InputField.Add(inputField);
                     } 
                 });
@@ -370,12 +370,12 @@ namespace Arcam.Main
                 var strat = StrategyUserWorkingOn[userId];
                 var index = strat.StrategyIndicators.FindIndex(x => x.Id == indicator.Id);
                 strat.StrategyIndicators.RemoveAt(index);
-                IndicatorUserWorkingOn[userId] = null;
+                IndicatorUserWorkingOn.Remove(userId);
                 UserState[msg.Chat.Id] = MenuItem.SetupStrategy;
                 return client.SendTextMessageAsync(msg.Chat.Id,
                     "Выберите индикатор для настройки или создайте новый:", replyMarkup: new ReplyKeyboardMarkup(GetKeyboardSetupStrategy(userId)));
             }
-            if (msg.Text.StartsWith("Use To Exit: "))
+            if (msg.Text!.StartsWith("Use To Exit: "))
             {
                 using (ApplicationContext db = new ApplicationContext())
                 {
@@ -438,7 +438,7 @@ namespace Arcam.Main
                         "Неверное значение поля, попробуйте снова:", replyMarkup: new ReplyKeyboardMarkup(keyboardList));
                 }
                 var indicator = IndicatorUserWorkingOn[userId];
-                indicator.InputFields[field.IndicatorField.CodeName] = field;
+                indicator.InputFields[field.IndicatorField.CodeName!] = field;
                 db.InputField.Update(field);
                 db.SaveChanges();
                 FieldUserWorkingOn[userId] = db.Entry(field).Entity;
@@ -495,7 +495,7 @@ namespace Arcam.Main
                     "Для тестирования существующей стратегии отправьте:\n" +
                     "/test", replyMarkup: new ReplyKeyboardRemove());
             }
-            Strategy strat = null;
+            Strategy? strat = null;
             if (!Users.ContainsValue(msg.Chat.Id))
             {
                 return client.SendTextMessageAsync(msg.Chat.Id,
@@ -524,7 +524,7 @@ namespace Arcam.Main
                     foreach (var field in fields)
                     {
                         db.Entry(field).Reference(x => x.IndicatorField).Load();
-                        indicator.InputFields.Add(field.IndicatorField.CodeName, field);
+                        indicator.InputFields.Add(field.IndicatorField.CodeName!, field);
                     }
                 }
             }
@@ -537,8 +537,8 @@ namespace Arcam.Main
                 {
                     try
                     {
-                        var file = picker.PickIndicators(strat, null);
-                        Task<Message> docTask = null;
+                        var file = picker.PickIndicators(strat);
+                        Task<Message>? docTask = null;
                         using (Stream reader = System.IO.File.OpenRead(file))
                         {
                             docTask = client.SendDocumentAsync(msg.Chat.Id, InputFile.FromStream(stream: reader, fileName: "hamlet.csv"));
@@ -575,7 +575,7 @@ namespace Arcam.Main
                 foreach (var acc in accs)
                 {
                     db.Entry(acc).Reference(x => x.Strategy).Load();
-                    keyboardList.Add(new() { new KeyboardButton(acc.Strategy.Name) });
+                    keyboardList.Add(new() { new KeyboardButton(acc.Strategy!.Name!) });
                 }
             }
 
@@ -592,7 +592,7 @@ namespace Arcam.Main
                 var accs = db.Strategy.Where(x => (x.AuthorId == userId || userId == 1) && x.Name != null).ToList();
                 foreach (var acc in accs)
                 {
-                    keyboardList.Add(new() { new KeyboardButton(acc.Name) });
+                    keyboardList.Add(new() { new KeyboardButton(acc.Name!) });
                 }
             }
 

@@ -56,7 +56,7 @@ namespace Arcam.Data.DataBase.DBTypes
             return strat;
         }
 
-        public string GetHashCode()
+        public new string GetHashCode()
         {
             var builder = new StringBuilder();
             builder.Append(this.Leverage);
