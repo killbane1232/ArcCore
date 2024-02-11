@@ -22,7 +22,7 @@ namespace Arcam.Main
             logger.Info("Starting threads");
             using (ApplicationContext db = new ApplicationContext())
             {
-                var accountsAll = db.Account.Where(x => x.IsActive == true).ToList();
+                var accountsAll = db.Account.Where(x => x.IsActive == true && x.IsActive == false).ToList();
                 foreach (var eachAcc in accountsAll)
                 {
                     StartThread(eachAcc, db);
@@ -35,7 +35,7 @@ namespace Arcam.Main
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var accounts = db.Account.Where(x => x.IsActive == true).ToList();
+                var accounts = db.Account.Where(x => x.IsActive == true && x.IsActive == false).ToList();
                 foreach (var each in cancellationToken.Keys)
                 {
                     if (!accounts.Any(x => x.Name == each))
@@ -114,12 +114,12 @@ namespace Arcam.Main
                 }
             }
 
-            var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(Strategy) });
+            var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(Strategy), typeof(Account) });
             if (workerConstructor == null)
                 throw new Exception("No constructor for Worker " + workerType.Name);
             var tokenSource = new CancellationTokenSource();
             threadNames.Add(account.Name);
-            var worker = (Worker)workerConstructor.Invoke(new object[] { platform, strategy });
+            var worker = (Worker)workerConstructor.Invoke(new object[] { platform, strategy, account });
             var thread = new Task(() =>
             {
                 try
