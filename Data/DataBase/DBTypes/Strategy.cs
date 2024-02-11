@@ -43,6 +43,8 @@ namespace Arcam.Data.DataBase.DBTypes
             strat.AuthorId = AuthorId;
             strat.ModUserId = ModUserId;
             strat.Leverage = Leverage;
+            strat.IsLong = IsLong;
+            strat.IsShort = IsShort;
             db.Strategy.Add(strat);
             db.SaveChanges();
             foreach (var curindic in StrategyIndicators.OrderBy(x => x.IndicatorId).ThenBy(x => x.IsExit))
@@ -59,9 +61,11 @@ namespace Arcam.Data.DataBase.DBTypes
         public new string GetHashCode()
         {
             var builder = new StringBuilder();
-            builder.Append(this.Leverage);
-            builder.Append(this.PairId);
-            builder.Append(this.TimingId);
+            builder.Append(Leverage);
+            builder.Append(PairId);
+            builder.Append(TimingId);
+            builder.Append(IsLong);
+            builder.Append(IsShort);
             foreach (var indic in StrategyIndicators.OrderBy(x => x.IndicatorId).ThenBy(x => x.IsExit))
             {
                 builder.Append(indic.IndicatorId);
