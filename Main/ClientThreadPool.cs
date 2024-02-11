@@ -93,7 +93,7 @@ namespace Arcam.Main
             db.Entry(account).Reference(x => x.Strategy).Load();
             db.Entry(account).Reference(x => x.Platform).Load();
             //Type platformType = Type.GetType(eachAcc.Platform.ClassName);
-            var platformConstructor = platformType.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
+            var platformConstructor = platformType.GetConstructor([typeof(string), typeof(string), typeof(string)]);
             if (platformConstructor == null)
                 throw new Exception("No constructor for Platform " + platformType.Name);
             IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { account.Platform.Url, account.Key, account.Secret });
@@ -104,6 +104,7 @@ namespace Arcam.Main
 
             foreach (var indicator in strategy.StrategyIndicators)
             {
+                indicator.Strategy = strategy;
                 db.Entry(indicator).Reference(x => x.Indicator).Load();
                 var fields = db.InputField.Where(x => x.StrategyIndicatorId == indicator.Id).ToList();
                 foreach (var field in fields)

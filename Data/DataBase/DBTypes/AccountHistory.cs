@@ -8,22 +8,24 @@ namespace Arcam.Data.DataBase.DBTypes
     {
         [Column("id")]
         public long Id { get; set; }
-        [Column("user_id"), ForeignKey("user_id")]
+        [Column("user_id")]
         public long UserId { get; set; }
-        public User User { get; set; }
-        [Column("platform_id"), ForeignKey("platform_id")]
+        [Column("platform_id")]
         public long PlatformId { get; set; }
-        public Platform Platform { get; set; }
         [Column("is_long")]
         public bool IsLong { get; set; }
         [Column("enter_date")]
         public DateTime EnterDate { get; set; }
         [Column("exit_date")]
-        public DateTime ExitDate { get; set; }
+        public DateTime? ExitDate { get; set; }
         [Column("enter_price")]
         public double EnterPrice { get; set; }
         [Column("exit_price")]
-        public double ExitPrice { get; set; }
+        public double? ExitPrice { get; set; }
+        [Column("deposit_before")]
+        public double DepositBefore { get; set; }
+        [Column("deposit_after")]
+        public double? DepositAfter { get; set; }
         [Column("leverage")]
         public int Leverage { get; set; }
     }

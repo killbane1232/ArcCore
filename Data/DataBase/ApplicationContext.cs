@@ -6,6 +6,7 @@ namespace Arcam.Data.DataBase
     public class ApplicationContext : DbContext
     {
         public DbSet<Account> Account { get; set; }
+        public DbSet<AccountHistory> AccountHistory { get; set; }
         public DbSet<ComparedFields> ComparedFields { get; set; }
         public DbSet<CompareType> CompareType { get; set; }
         public DbSet<FieldType> FieldType { get; set; }
