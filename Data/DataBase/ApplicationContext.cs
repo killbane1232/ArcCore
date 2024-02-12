@@ -22,6 +22,9 @@ namespace Arcam.Data.DataBase
         public DbSet<User> User { get; set; }
         public DbSet<WorkingPair> WorkingPair { get; set; }
         public DbSet<DBToken> Token { get; set; }
+        public DbSet<AccessParameter> AccessParameter { get; set; }
+        public DbSet<AccessType> AccessType { get; set; }
+        public DbSet<AccessMatrix> AccessMatrix { get; set; }
         public ApplicationContext()
         {
             Database.EnsureCreated();
@@ -53,6 +56,11 @@ namespace Arcam.Data.DataBase
                 .HasMany(s => s.indicatorFields)
                 .WithOne(si => si.Indicator)
                 .HasForeignKey(si => si.IndicatorId)
+                .HasPrincipalKey(s => s.Id);
+            modelBuilder.Entity<AccessType>()
+                .HasMany(s => s.MatrixParameters)
+                .WithOne(si => si.AccessType)
+                .HasForeignKey(si => si.AccessTypeId)
                 .HasPrincipalKey(s => s.Id);
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }

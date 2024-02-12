@@ -7,7 +7,6 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Arcam.Data.DataBase;
 using Arcam.Data.DataBase.DBTypes;
-using Microsoft.EntityFrameworkCore;
 
 namespace Arcam.Main
 {
@@ -16,9 +15,6 @@ namespace Arcam.Main
         private CancellationTokenSource cts;
         private TelegramBotClient client;
         private Dictionary<long, long> Users { get; set; } = new Dictionary<long, long>();
-        private Dictionary<long, Strategy> StrategyUserWorkingOn { get; set; } = new Dictionary<long, Strategy>();
-        private Dictionary<long, StrategyIndicator> IndicatorUserWorkingOn { get; set; } = new Dictionary<long, StrategyIndicator>();
-        private Dictionary<long, InputField> FieldUserWorkingOn { get; set; } = new Dictionary<long, InputField>();
         private TelegramUserSerializer serializer;
         private static TelegramBot? bot;
         private static Dictionary<long, MenuItem> UserState = new Dictionary<long, MenuItem>();
@@ -161,7 +157,7 @@ namespace Arcam.Main
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var admins = db.User.Where(x => x.Access == 0).ToList();
+                var admins = db.User.Where(x => x.AccessId == 0).ToList();
                 foreach (var item in admins)
                 {
                     if (Users.ContainsValue(item.Id))

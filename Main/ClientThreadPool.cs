@@ -35,7 +35,7 @@ namespace Arcam.Main
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var accounts = db.Account.Where(x => x.IsActive == true && x.IsActive == false).ToList();
+                var accounts = db.Account.Where(x => x.IsActive == true).ToList();
                 foreach (var each in cancellationToken.Keys)
                 {
                     if (!accounts.Any(x => x.Name == each))

@@ -10,8 +10,9 @@ namespace Arcam.Data.DataBase.DBTypes
         public long Id { get; set; }
         [Column("username")]
         public string Name { get; set; }
-        [Column("access")]
-        public long? Access { get; set; }
+        [Column("access"), ForeignKey("access")]
+        public long? AccessId { get; set; }
+        public virtual AccessType? Access { get; set; }
         [Column("password")]
         public string Password { get; set; }
         [Column("login")]
