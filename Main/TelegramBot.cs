@@ -6,20 +6,18 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Arcam.Data.DataBase;
-using Arcam.Data.DataBase.DBTypes;
 
 namespace Arcam.Main
 {
     public class TelegramBot
     {
-        private CancellationTokenSource cts;
-        private TelegramBotClient client;
-        private Dictionary<long, long> Users { get; set; } = new Dictionary<long, long>();
-        private TelegramUserSerializer serializer;
+        private readonly CancellationTokenSource cts;
+        private readonly TelegramBotClient client;
+        private Dictionary<long, long> Users { get; set; } = [];
         private static TelegramBot? bot;
-        private static Dictionary<long, MenuItem> UserState = new Dictionary<long, MenuItem>();
+        private static readonly Dictionary<long, MenuItem> UserState = [];
         public static IPicker? picker = null;
-        private Logger logger = LogManager.GetCurrentClassLogger();
+        private readonly Logger logger = LogManager.GetCurrentClassLogger();
         public enum MenuItem
         {
             Start,
@@ -33,8 +31,7 @@ namespace Arcam.Main
         }
         public static TelegramBot getInstance()
         {
-            if (bot == null)
-                bot = new TelegramBot();
+            bot ??= new TelegramBot();
             return bot;
         }
 
@@ -50,9 +47,14 @@ namespace Arcam.Main
             }
             cts = new CancellationTokenSource();
             client = new TelegramBotClient(token);
-            serializer = new TelegramUserSerializer();
-
-            Users = serializer.ReadUsers() ?? new Dictionary<long, long>();
+            Users = new Dictionary<long, long>();
+            using (var db = new ApplicationContext())
+            {
+                foreach (var item in db.User.Where(x => x.TelegramId != null))
+                {
+                    Users[item.Id] = item.TelegramId ?? 0;
+                }
+            }
 
             client.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), null, cts.Token);
         }
@@ -68,7 +70,7 @@ namespace Arcam.Main
                         {
                             result = MessageHandler(update);
                         }
-                        catch (Exception ex) 
+                        catch (Exception ex)
                         {
                             logger.Error(ex);
                             result = client.SendTextMessageAsync(update.Message.Chat.Id,
@@ -97,10 +99,9 @@ namespace Arcam.Main
 
         private Task MessageHandler(Update update)
         {
-            //return Task.CompletedTask;
             var msg = update.Message;
 
-            if (msg == null || msg.From == null)
+            if (msg == null || msg.From == null || msg.Text == null)
                 return Task.CompletedTask;
 
             var result = Task.CompletedTask;
@@ -113,10 +114,17 @@ namespace Arcam.Main
                     UserState[msg.Chat.Id] = MenuItem.Start;
                     break;
                 case "/stop":
+                    using (var db = new ApplicationContext())
+                    {
+                        foreach (var item in db.User.Where(x => x.TelegramId == msg.Chat.Id))
+                        {
+                            item.TelegramId = null;
+                            db.User.Update(item);
+                        }
+                    }
                     Users.Remove(Users.First(x => x.Value == msg.Chat.Id).Key);
                     result = client.SendTextMessageAsync(msg.Chat.Id,
                         "Регистрация успешно удалена.");
-                    serializer.SaveUsers(Users);
                     break;
                 case "/status":
                     StatusBuffer.CheckStatus(msg.From.Id);
@@ -129,10 +137,10 @@ namespace Arcam.Main
                         client.SendStickerAsync(msg.Chat.Id, InputFile.FromFileId("CAACAgIAAxkBAAIBmWFf8Ia0tHtyLUI9Pg2cfe2Pz87tAAIuAwACtXHaBqoozbmcyVK2IQQ"));
                         break;
                     }
-                    switch (UserState[msg.Chat.Id]) 
+                    switch (UserState[msg.Chat.Id])
                     {
                         case MenuItem.Start:
-                            if(!UpdateUserTgId(msg.Text!, msg.Chat.Id))
+                            if (!UpdateUserTgId(msg.Text, msg.Chat.Id))
                             {
                                 result = client.SendTextMessageAsync(msg.Chat.Id,
                                     "Неверный логин");
@@ -155,17 +163,21 @@ namespace Arcam.Main
 
         public void SendTextMessage(string message)
         {
-            using (ApplicationContext db = new ApplicationContext())
+            using ApplicationContext db = new ApplicationContext();
+            var admins = db.User.Where(x => x.TelegramId != null).ToList();
+            foreach (var user in admins)
             {
-                var admins = db.User.Where(x => x.AccessId == 0).ToList();
-                foreach (var item in admins)
+                db.Entry(user).Reference(x => x.Access).Load();
+                db.Entry(user.Access).Collection(x => x.MatrixParameters).Load();
+                foreach (var param in user.Access.MatrixParameters)
                 {
-                    if (Users.ContainsValue(item.Id))
-                    {
-                        client.SendTextMessageAsync(Users[item.Id],
-                            message);
-                    }
+                    db.Entry(param).Reference(x => x.AccessType).Load();
                 }
+            }
+            foreach (var item in admins.Where(x => x.Access.MatrixParameters.Any(y => y.AccessType.Name == "admin")))
+            {
+                client.SendTextMessageAsync(item.TelegramId!,
+                    message);
             }
         }
 
@@ -181,20 +193,17 @@ namespace Arcam.Main
 
         public bool UpdateUserTgId(string login, long chatId)
         {
-            using (ApplicationContext db = new ApplicationContext())
-            {
-                var users = db.User.Where(x => x.Login == login);
-                if (users.Count() == 0)
-                    return false;
-                var user = users.First();
-                if (user == null) return false;
-                user.TelegramId = chatId;
-                db.User.Update(user);
-                db.SaveChanges();
-                Users[user.Id] = chatId;
-                serializer.SaveUsers(Users);
-                return true;
-            }
+            using ApplicationContext db = new();
+            var users = db.User.Where(x => x.Login == login);
+            if (!users.Any())
+                return false;
+            var user = users.First();
+            if (user == null) return false;
+            user.TelegramId = chatId;
+            db.User.Update(user);
+            db.SaveChanges();
+            Users[user.Id] = chatId;
+            return true;
         }
     }
 }

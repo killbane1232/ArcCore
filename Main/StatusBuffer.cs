@@ -5,10 +5,10 @@ namespace Arcam.Main
 {
     public class StatusBuffer
     {
-        private static List<long> NeedStatus = new();
-        private static object locker = new object();
-        private static List<string> keysList = new List<string>();
-        private static Dictionary<string, Dictionary<string, string>> baseList = new Dictionary<string, Dictionary<string, string>>();
+        private static readonly List<long> NeedStatus = [];
+        private static readonly object locker = new();
+        private static readonly List<string> keysList = [];
+        private static readonly Dictionary<string, Dictionary<string, string>> baseList = [];
         private static int printCnt = 0;
         private static int maxNameLength = 0;
         private static int maxValletLength = 6;
@@ -22,17 +22,14 @@ namespace Arcam.Main
             {
                 ClientThreadPool.SetLastResponse();
                 printCnt++;
-                Dictionary<string, string>? currentThreadDict = null;
                 var curName = Thread.CurrentThread.Name ?? "";
-                if (!baseList.ContainsKey(curName))
+                if (!baseList.TryGetValue(curName, out Dictionary<string, string>? currentThreadDict))
                 {
-                    currentThreadDict = new Dictionary<string, string>();
+                    currentThreadDict = [];
                     baseList[curName] = currentThreadDict;
                     if (maxNameLength < curName.Length)
                         maxNameLength = curName.Length;
                 }
-                else
-                    currentThreadDict = baseList[curName];
                 currentThreadDict[valletStr] = vallet;
 
                 if (maxValletLength < vallet.Length)
@@ -52,6 +49,7 @@ namespace Arcam.Main
                 if ((printCnt % baseList.Count) == 0 && NeedStatus.Count > 0)
                 {
                     printCnt = 0;
+                    var dict = new Dictionary<long,  string>();
                     var str = new StringBuilder();
                     str.Append(new string(' ', maxNameLength)).Append("║").Append("Vallet");
                     if (maxValletLength > 6)
@@ -61,6 +59,7 @@ namespace Arcam.Main
                     for (var i = 0; i < keysList.Count; i++)
                         str.Append($"║{keysList[i]}");
                     str.Append($"║{date}\n");
+
                     foreach (var each in baseList.OrderBy(x => x.Key))
                     {
                         str.Append(each.Key);
@@ -74,7 +73,11 @@ namespace Arcam.Main
                             str.Append(new string(' ', maxValletLength - each.Value[valletStr].Length));
                         }
                         for (var i = 0; i < keysList.Count; i++)
-                            str.Append("║" + each.Value[keysList[i]] + new string(' ', keysList[i].Length - each.Value[keysList[i]].Length));
+                        {
+                            var value = each.Value.ContainsKey(keysList[i]) ? each.Value[keysList[i]] : "None";
+                            str.Append("║" + value + new string(' ', keysList[i].Length - value.Length));
+                        }
+                        keysList.Clear();
                         str.Append($"║{each.Value[date]}\n");
                     }
                     str.Insert(0, "<pre>\n");
@@ -85,7 +88,7 @@ namespace Arcam.Main
                         try
                         {
                             TelegramLogger.bot.SendMdTableMessage(str.ToString(), NeedStatus[userIndex]);
-                            NeedStatus.RemoveAt(userIndex);
+                            NeedStatus.RemoveAt(userIndex++);
                         }
                         catch
                         {

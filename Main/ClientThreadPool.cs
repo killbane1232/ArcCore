@@ -1,16 +1,13 @@
 ﻿using Arcam.Data.DataBase;
 using Arcam.Data.DataBase.DBTypes;
 using Arcam.Market;
-using Microsoft.EntityFrameworkCore;
+
 namespace Arcam.Main
 {
     public class ClientThreadPool
     {
         private static readonly object locker = new();
-        static List<string> threadNames = new List<string>();
-        static readonly Dictionary<string, DateTime> lastResponse = new Dictionary<string, DateTime>();
-        private readonly Dictionary<string, Task> threads = new Dictionary<string, Task>();
-        private Dictionary<string, CancellationTokenSource> cancellationToken;
+        private readonly static Dictionary<string, StartedThread> threads = [];
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
         readonly Type workerType;
         readonly Type platformType;
@@ -18,85 +15,114 @@ namespace Arcam.Main
         {
             this.workerType = workerType;
             this.platformType = platformType;
-            cancellationToken = new Dictionary<string, CancellationTokenSource>();
             logger.Info("Starting threads");
-            using (ApplicationContext db = new ApplicationContext())
+            using ApplicationContext db = new();
+            var accountsAll = db.Account.Where(x => x.IsActive == true).ToList();
+            foreach (var eachAcc in accountsAll)
             {
-                var accountsAll = db.Account.Where(x => x.IsActive == true && x.IsActive == false).ToList();
-                foreach (var eachAcc in accountsAll)
-                {
-                    StartThread(eachAcc, db);
-                    logger.Info("Started thread " + threadNames[^1]);
-                }
+                StartThread(eachAcc, db);
+                logger.Info("Started thread " + eachAcc.Name);
             }
         }
 
         void CheckAndRestartThreads()
         {
-            using (ApplicationContext db = new ApplicationContext())
+            using ApplicationContext db = new ApplicationContext();
+            var accounts = db.Account.Where(x => x.IsActive == true).ToList();
+            foreach (var each in threads.Keys)
             {
-                var accounts = db.Account.Where(x => x.IsActive == true).ToList();
-                foreach (var each in cancellationToken.Keys)
+                if (!accounts.Any(x => x.Name == each))
                 {
-                    if (!accounts.Any(x => x.Name == each))
+                    var thread = threads[each];
+                    thread.ct.Cancel();
+                    try
                     {
-                        cancellationToken[each].Cancel();
+                        threads[each].task.Wait();
+                    }
+                    catch
+                    {
+                    }
+                    finally
+                    {
+                        thread.ct.Dispose();
+                    }
+                    threads.Remove(each);
+                    logger.Info("Stopped thread " + each);
+                }
+            }
+            foreach (var each in accounts)
+            {
+                if (threads.TryGetValue(each.Name, out StartedThread? thread))
+                {
+                    var strategy = GetStrategy(each, db);
+                    if (thread.task.Status == TaskStatus.Faulted ||
+                        thread.task.Status == TaskStatus.RanToCompletion ||
+                        thread.task.Status == TaskStatus.Canceled ||
+                        (DateTime.Now - thread.lastResponse).TotalMinutes > 1 ||
+                        strategy.GetHashCode() != thread.stratHash)
+                    {
+                        thread.ct.Cancel();
                         try
                         {
-                            threads[each].Wait();
+                            thread.task.Wait();
                         }
-                        catch
-                        {
-                        }
+                        catch { }
                         finally
                         {
-                            cancellationToken[each].Dispose();
+                            thread.ct.Dispose();
                         }
-                        cancellationToken.Remove(each);
-                        logger.Info("Stopped thread " + each);
+                        logger.Info("Stopped thread " + each.Name);
                     }
+                    else
+                        continue;
                 }
-                foreach (var each in accounts)
-                {
-                    if (cancellationToken.ContainsKey(each.Name) && threads.ContainsKey(each.Name))
-                    {
-                        var ct = cancellationToken[each.Name];
-                        var task = threads[each.Name];
-                        if (task.Status == TaskStatus.Faulted || task.Status == TaskStatus.RanToCompletion || task.Status == TaskStatus.Canceled || (DateTime.Now - lastResponse[each.Name]).TotalMinutes > 1)
-                        {
-                            ct.Cancel();
-                            try
-                            {
-                                task.Wait();
-                            }
-                            catch
-                            {
-                            }
-                            finally
-                            {
-                                ct.Dispose();
-                            }
-                            logger.Info("Stopped thread " + each.Name);
-                        }
-                        else
-                            continue;
-                    }
-                    StartThread(each, db);
-                    threads[each.Name].Start();
-                    logger.Info("Restarted thread " + each.Name);
-                }
+                StartThread(each, db);
+                threads[each.Name].task.Start();
+                logger.Info("Restarted thread " + each.Name);
             }
         }
 
         void StartThread(Account account, ApplicationContext db)
         {
-            db.Entry(account).Reference(x => x.Strategy).Load();
             db.Entry(account).Reference(x => x.Platform).Load();
-            //Type platformType = Type.GetType(eachAcc.Platform.ClassName);
-            var platformConstructor = platformType.GetConstructor([typeof(string), typeof(string), typeof(string)]);
-            if (platformConstructor == null)
+            var platformConstructor = platformType.GetConstructor([typeof(string), typeof(string), typeof(string)]) ??
                 throw new Exception("No constructor for Platform " + platformType.Name);
             IPlatform platform = (IPlatform)platformConstructor.Invoke(new object[] { account.Platform.Url, account.Key, account.Secret });
+            var strategy = GetStrategy(account, db);
+
+            var workerConstructor = workerType.GetConstructor([typeof(IPlatform), typeof(Strategy), typeof(Account)]) ??
+                throw new Exception("No constructor for Worker " + workerType.Name);
+            var tokenSource = new CancellationTokenSource();
+            var worker = (Worker)workerConstructor.Invoke(new object[] { platform, strategy, account });
+            var thread = new Task(() =>
+            {
+                try
+                {
+                    worker.ct = tokenSource.Token;
+                    Thread.CurrentThread.Name = account.Name;
+                    worker.Start();
+                }
+                catch (OperationCanceledException ex)
+                {
+                    logger.Error(ex);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                }
+            }, tokenSource.Token);
+            threads[account.Name] = new StartedThread()
+            {
+                lastResponse = DateTime.Now,
+                ct = tokenSource,
+                stratHash = strategy.GetHashCode(),
+                task = thread
+            };
+        }
+
+        static Strategy GetStrategy(Account account, ApplicationContext db)
+        {
+            db.Entry(account).Reference(x => x.Strategy).Load();
             var strategy = account.Strategy!;
             db.Entry(strategy).Reference(x => x.Timing).Load();
             db.Entry(strategy).Reference(x => x.Pair).Load();
@@ -113,37 +139,13 @@ namespace Arcam.Main
                     indicator.InputFields[field.IndicatorField.CodeName!] = field;
                 }
             }
-
-            var workerConstructor = workerType.GetConstructor(new Type[] { typeof(IPlatform), typeof(Strategy), typeof(Account) });
-            if (workerConstructor == null)
-                throw new Exception("No constructor for Worker " + workerType.Name);
-            var tokenSource = new CancellationTokenSource();
-            threadNames.Add(account.Name);
-            var worker = (Worker)workerConstructor.Invoke(new object[] { platform, strategy, account });
-            var thread = new Task(() =>
-            {
-                try
-                {
-                    Thread.CurrentThread.Name = account.Name;
-                    worker.Start();
-                }
-                catch (OperationCanceledException ex)
-                {
-                    logger.Error(ex);
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex);
-                }
-            }, tokenSource.Token);
-            lastResponse[account.Name] = DateTime.Now;
-            cancellationToken[account.Name] = tokenSource;
-            threads[account.Name] = thread;
+            return strategy;
         }
+
         public void Start()
         {
             foreach (var task in threads)
-                task.Value.Start();
+                task.Value.task.Start();
             while (true)
             {
                 Thread.Sleep(30000);
@@ -152,22 +154,20 @@ namespace Arcam.Main
         }
         public void Stop()
         {
-            foreach (var task in threads)
+            foreach (var thread in threads)
             {
-                var each = cancellationToken[task.Key];
-                each.Cancel();
+                thread.Value.ct.Cancel();
                 try
                 {
-                    task.Value.Wait();
+                    thread.Value.task.Wait();
                 }
-                catch (OperationCanceledException)
-                {
-                }
+                catch (OperationCanceledException) { }
                 catch (AggregateException ex)
                 {
-                    ex.Handle(ex => {
+                    ex.Handle(ex =>
+                    {
                         logger.Error(ex);
-                        return true; 
+                        return true;
                     });
                 }
                 catch (Exception ex)
@@ -178,7 +178,7 @@ namespace Arcam.Main
                 {
                     try
                     {
-                        each.Dispose();
+                        thread.Value.ct.Dispose();
                     }
                     catch (Exception ex)
                     {
@@ -191,8 +191,15 @@ namespace Arcam.Main
         {
             lock (locker)
             {
-                lastResponse[Thread.CurrentThread.Name??""] = DateTime.Now;
+                threads[Thread.CurrentThread.Name ?? ""].lastResponse = DateTime.Now;
             }
+        }
+        private class StartedThread
+        {
+            public Task task;
+            public string stratHash;
+            public CancellationTokenSource ct;
+            public DateTime lastResponse;
         }
     }
 }

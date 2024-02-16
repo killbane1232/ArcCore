@@ -11,13 +11,13 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("username")]
         public string Name { get; set; }
         [Column("access"), ForeignKey("access")]
-        public long? AccessId { get; set; }
-        public virtual AccessType? Access { get; set; }
+        public long AccessId { get; set; }
+        public virtual AccessType Access { get; set; }
         [Column("password")]
         public string Password { get; set; }
         [Column("login")]
         public string Login { get; set; }
         [Column("tgid")]
-        public long? TelegramId { get; set; } //TODO ???
+        public long? TelegramId { get; set; }
     }
 }

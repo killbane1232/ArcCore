@@ -29,7 +29,7 @@ namespace Arcam.Security
             return CheckAccessAccounts(db, user);
         }
 
-        public static bool CheckAccessAccounts(ApplicationContext db, User user)
+        public static bool CheckAccessAccounts(ApplicationContext db, User? user)
         {
             if (user == null)
                 return false;
