@@ -11,7 +11,7 @@ namespace Arcam.Security
             return GetAllowedStrategies(db, user);
         }
 
-        public static IQueryable<Strategy>? GetAllowedStrategies(ApplicationContext db, User user)
+        public static IQueryable<Strategy>? GetAllowedStrategies(ApplicationContext db, User? user)
         {
             if (user == null)
                 return null;
@@ -21,6 +21,23 @@ namespace Arcam.Security
             if (user.Access.MatrixParameters.Any(x => x.Param.Name == "allow_public_strategies"))
                 return result.Where(x => x.AuthorId == user.Id || x.IsPublic);
             return result.Where(x => x.AuthorId == user.Id);
+        }
+        public static IQueryable<Account>? GetAllowedAccounts(ApplicationContext db, string token)
+        {
+            var user = GetUserFromToken(db, token);
+            return GetAllowedAccounts(db, user);
+        }
+
+        public static IQueryable<Account>? GetAllowedAccounts(ApplicationContext db, User? user)
+        {
+            if (user == null)
+                return null;
+            IQueryable<Account> result = db.Account.Where(x => x.Name != null);
+            if (user.Access.MatrixParameters.Any(x => x.Param.Name == "admin"))
+                return result;
+            if (user.Access.MatrixParameters.Any(x => x.Param.Name == "allow_accounts"))
+                return result.Where(x => x.UserId == user.Id);
+            return null;
         }
 
         public static bool CheckAccessAccounts(ApplicationContext db, string token)

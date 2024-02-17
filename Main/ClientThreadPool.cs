@@ -34,10 +34,10 @@ namespace Arcam.Main
                 if (!accounts.Any(x => x.Name == each))
                 {
                     var thread = threads[each];
-                    thread.ct.Cancel();
+                    thread.ct!.Cancel();
                     try
                     {
-                        threads[each].task.Wait();
+                        threads[each].task!.Wait();
                     }
                     catch
                     {
@@ -55,13 +55,13 @@ namespace Arcam.Main
                 if (threads.TryGetValue(each.Name, out StartedThread? thread))
                 {
                     var strategy = GetStrategy(each, db);
-                    if (thread.task.Status == TaskStatus.Faulted ||
+                    if (thread.task!.Status == TaskStatus.Faulted ||
                         thread.task.Status == TaskStatus.RanToCompletion ||
                         thread.task.Status == TaskStatus.Canceled ||
                         (DateTime.Now - thread.lastResponse).TotalMinutes > 1 ||
                         strategy.GetHashCode() != thread.stratHash)
                     {
-                        thread.ct.Cancel();
+                        thread.ct!.Cancel();
                         try
                         {
                             thread.task.Wait();
@@ -77,7 +77,7 @@ namespace Arcam.Main
                         continue;
                 }
                 StartThread(each, db);
-                threads[each.Name].task.Start();
+                threads[each.Name].task!.Start();
                 logger.Info("Restarted thread " + each.Name);
             }
         }
@@ -145,7 +145,7 @@ namespace Arcam.Main
         public void Start()
         {
             foreach (var task in threads)
-                task.Value.task.Start();
+                task.Value.task!.Start();
             while (true)
             {
                 Thread.Sleep(30000);
@@ -156,10 +156,10 @@ namespace Arcam.Main
         {
             foreach (var thread in threads)
             {
-                thread.Value.ct.Cancel();
+                thread.Value.ct!.Cancel();
                 try
                 {
-                    thread.Value.task.Wait();
+                    thread.Value.task!.Wait();
                 }
                 catch (OperationCanceledException) { }
                 catch (AggregateException ex)
@@ -196,9 +196,9 @@ namespace Arcam.Main
         }
         private class StartedThread
         {
-            public Task task;
-            public string stratHash;
-            public CancellationTokenSource ct;
+            public Task? task;
+            public string? stratHash;
+            public CancellationTokenSource? ct;
             public DateTime lastResponse;
         }
     }
