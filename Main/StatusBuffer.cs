@@ -77,9 +77,9 @@ namespace Arcam.Main
                             var value = each.Value.ContainsKey(keysList[i]) ? each.Value[keysList[i]] : "None";
                             str.Append("║" + value + new string(' ', keysList[i].Length - value.Length));
                         }
-                        keysList.Clear();
                         str.Append($"║{each.Value[date]}\n");
                     }
+                    keysList.Clear();
                     str.Insert(0, "<pre>\n");
                     str.Append("</pre>\n");
                     var userIndex = 0;
