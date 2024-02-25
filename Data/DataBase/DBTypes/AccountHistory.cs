@@ -8,6 +8,8 @@ namespace Arcam.Data.DataBase.DBTypes
     {
         [Column("id")]
         public long Id { get; set; }
+        [Column("account_id")]
+        public long AccountId { get; set; }
         [Column("user_id")]
         public long UserId { get; set; }
         [Column("platform_id")]
