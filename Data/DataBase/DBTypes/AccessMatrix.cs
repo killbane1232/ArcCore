@@ -9,9 +9,9 @@ namespace Arcam.Data.DataBase.DBTypes
     {
         [Column("param_id"), ForeignKey("param_id")]
         public long ParamId { get; set; }
-        public virtual AccessParameter Param { get; set; }
+        public virtual AccessParameter? Param { get; set; }
         [Column("access_type_id"), ForeignKey("access_type_id")]
         public long AccessTypeId { get; set; }
-        public virtual AccessType AccessType { get; set; }
+        public virtual AccessType? AccessType { get; set; }
     }
 }

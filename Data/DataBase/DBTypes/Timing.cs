@@ -12,5 +12,20 @@ namespace Arcam.Data.DataBase.DBTypes
         public string Name { get; set; }
         [Column("value")]
         public int Value { get; set; }
+        public int GetTimeMultiplier()
+        {
+            switch (Value)
+            {
+                case -2:
+                    return 1;
+                case -1:
+                    return 5;
+                case 0:
+                    return 60;
+                case 1:
+                    return 24 * 60;
+            }
+            throw new ArgumentException("WrongTimespanValue");
+        }
     }
 }

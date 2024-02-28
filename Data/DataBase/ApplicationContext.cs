@@ -25,6 +25,7 @@ namespace Arcam.Data.DataBase
         public DbSet<AccessParameter> AccessParameter { get; set; }
         public DbSet<AccessType> AccessType { get; set; }
         public DbSet<AccessMatrix> AccessMatrix { get; set; }
+        public DbSet<TradingHistory> TradingHistory { get; set; }
         public ApplicationContext()
         {
             Database.EnsureCreated();

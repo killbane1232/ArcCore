@@ -1,10 +1,11 @@
-﻿using Arcam.Data.DataTypes;
+﻿using Arcam.Data.DataBase.DBTypes;
+using Arcam.Data.DataTypes;
 
 namespace Arcam.Market
 {
     public interface IPlatform
     {
-        List<Candle> TakeCandles(string symbol, int count, int timeSpan, bool reverse = false, DateTimeOffset? where = null);
+        List<Candle> TakeCandles(string symbol, int count, Timing timing, bool reverse = false, DateTimeOffset? where = null);
         string ClosePosition(string symbol);
         string PostOrders(bool buy, int quality, string symbol);
         Dictionary<string, PositionInfo> EncountPositions();

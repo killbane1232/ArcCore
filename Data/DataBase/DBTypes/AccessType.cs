@@ -8,7 +8,7 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("id")]
         public long Id { get; set; }
         [Column("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public List<AccessMatrix> MatrixParameters { get; set; } = [];
     }
 }
