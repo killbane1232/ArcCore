@@ -7,7 +7,7 @@ namespace Arcam.Market
     {
         List<Candle> TakeCandles(string symbol, int count, Timing timing, bool reverse = false, DateTimeOffset? where = null);
         string ClosePosition(string symbol);
-        string PostOrders(bool buy, int quality, string symbol);
+        string PostOrders(bool buy, double quality, string symbol);
         Dictionary<string, PositionInfo> EncountPositions();
         WalletInfo TakeWallet();
         string SetLeverage(string symbol, double leverage = 0);

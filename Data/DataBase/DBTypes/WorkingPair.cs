@@ -10,7 +10,8 @@ namespace Arcam.Data.DataBase.DBTypes
         public long Id { get; set; }
         [Column("name")]
         public string Name { get; set; }
-        [ForeignKey("platform_id")]
+        [Column("platform_id"), ForeignKey("platform_id")]
+        public virtual long PlatformId { get; set; }
         public virtual Platform Platform { get; set; }
     }
 }
