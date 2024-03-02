@@ -12,6 +12,7 @@ namespace Arcam.Main
         private static int printCnt = 0;
         private static int maxNameLength = 0;
         private static int maxValletLength = 6;
+        public static IThreadPool ThreadPool;
 
         public static void AddDataToBuffer(string vallet, Dictionary<string, string> data)
         {
@@ -20,7 +21,7 @@ namespace Arcam.Main
 
             lock (locker)
             {
-                ClientThreadPool.SetLastResponse();
+                ThreadPool.SetLastResponse();
                 printCnt++;
                 var curName = Thread.CurrentThread.Name ?? "";
                 if (!baseList.TryGetValue(curName, out Dictionary<string, string>? currentThreadDict))
