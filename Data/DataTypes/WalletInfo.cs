@@ -16,5 +16,12 @@
             get => marginBalance / 10000;
             //get => (amount - (pendingDebit.HasValue ? pendingDebit.Value : 0)) / 10000;
         }
+        public double MyDelimeter;
+        public string Postfix = "";
+        public string AvaivableToTradeWhenClosedString
+        {
+            get => (AvaivableToTradeWhenClosed / MyDelimeter).ToString() + Postfix;
+            //get => (amount - (pendingDebit.HasValue ? pendingDebit.Value : 0)) / 10000;
+        }
     }
 }
