@@ -16,6 +16,8 @@ namespace Arcam.Data.DataBase.DBTypes
         public DateTime Date { get; set; }
         [Column("strategy_hash")]
         public string? StrategyHash { get; set; }
+        [Column("base_strategy_id")]
+        public virtual long BaseStrategyId { get; set; }
         [NotMapped]
         public List<TestStrategyTP> TestResultsList { get; set; }
     }

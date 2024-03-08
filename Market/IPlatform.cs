@@ -5,13 +5,13 @@ namespace Arcam.Market
 {
     public interface IPlatform
     {
-        List<Candle> TakeCandles(string symbol, int count, Timing timing, bool reverse = false, DateTimeOffset? where = null);
-        string ClosePosition(string symbol);
-        string PostOrders(bool buy, double quality, string symbol);
+        List<Candle> TakeCandles(WorkingPair pair, int count, Timing timing, bool reverse = false, DateTimeOffset? where = null);
+        string ClosePosition(WorkingPair pair);
+        string PostOrders(bool buy, double quality, WorkingPair pair);
         Dictionary<string, PositionInfo> EncountPositions();
-        WalletInfo TakeWallet();
-        string SetLeverage(string symbol, double leverage = 0);
+        WalletInfo TakeWallet(WorkingPair pair);
+        string SetLeverage(WorkingPair pair, double leverage = 0);
         DateTime NextCheckDate();
-        double TakeMidPrice(string symbol);
+        double TakeMidPrice(WorkingPair pair);
     }
 }
