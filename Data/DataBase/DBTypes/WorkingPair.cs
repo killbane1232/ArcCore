@@ -16,9 +16,9 @@ namespace Arcam.Data.DataBase.DBTypes
         [Column("main_currency"), ForeignKey("main_currency")]
         public virtual long MainCurrencyId { get; set; }
         public virtual Currency MainCurrency { get; set; }
-        [Column("multiplier")]
-        public virtual double PointMultiplier { get; set; }
         [Column("point_multiplier")]
+        public virtual double PointMultiplier { get; set; }
+        [Column("multiplier")]
         public virtual double Multiplier { get; set; }
         [Column("encounting_type"), ForeignKey("encounting_type")]
         public virtual long EncountingTypeId { get; set; }
