@@ -4,8 +4,16 @@ namespace Arcam.Main.Loggers
 {
     public class LoggerConfigurator
     {
-        public static void Configure()
+        public static void Configure(bool flag = false)
         {
+            if (flag)
+            {
+                LogManager.Setup().LoadConfiguration(builder => {
+                    builder.ForLogger().FilterMinLevel(LogLevel.Warn).WriteToConsole();
+                    builder.ForLogger().FilterMinLevel(LogLevel.Warn).WriteToFile(fileName: "logs/Generations.txt");
+                });
+                return;
+            }
             LogManager.Setup().LoadConfiguration(builder => {
                 builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToConsole();
                 builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToFile(fileName: "logs/${shortdate}/${logger}.txt");

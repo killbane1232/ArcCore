@@ -27,14 +27,14 @@ namespace Arcam.Data.DataBase.DBTypes
             strategy.IndicatorId = IndicatorId;
             strategy.IsExit = IsExit;
             strategy.StrategyId = id;
-            db.StrategyIndicator.Add(strategy);
+            db.StrategyIndicator.Update(strategy);
             strategy.InputFields = new Dictionary<string, InputField>();
             db.SaveChanges();
             foreach (var curindic in InputFields.Values)
             {
                 var cpy = curindic.CreateCopy(db);
                 cpy.StrategyIndicatorId = strategy.Id;
-                db.InputField.Add(cpy);
+                db.InputField.Update(cpy);
                 strategy.InputFields[curindic.IndicatorField.CodeName!] = cpy;
             }
             db.SaveChanges();

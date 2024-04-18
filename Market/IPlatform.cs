@@ -11,7 +11,5 @@ namespace Arcam.Market
         Dictionary<string, PositionInfo> EncountPositions();
         WalletInfo TakeWallet(WorkingPair pair);
         string SetLeverage(WorkingPair pair, double leverage = 0);
-        DateTime NextCheckDate();
-        double TakeMidPrice(WorkingPair pair);
     }
 }

@@ -45,7 +45,7 @@ namespace Arcam.Data.DataBase.DBTypes
             strat.Leverage = Leverage;
             strat.IsLong = IsLong;
             strat.IsShort = IsShort;
-            db.Strategy.Add(strat);
+            db.Strategy.Update(strat);
             db.SaveChanges();
             foreach (var curindic in StrategyIndicators.OrderBy(x => x.IndicatorId).ThenBy(x => x.IsExit))
             {
