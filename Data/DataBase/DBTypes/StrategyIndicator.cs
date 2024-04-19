@@ -34,7 +34,7 @@ namespace Arcam.Data.DataBase.DBTypes
             {
                 var cpy = curindic.CreateCopy(db);
                 cpy.StrategyIndicatorId = strategy.Id;
-                db.InputField.Update(cpy);
+                db.InputField.Add(cpy);
                 strategy.InputFields[curindic.IndicatorField.CodeName!] = cpy;
             }
             db.SaveChanges();
