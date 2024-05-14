@@ -20,8 +20,8 @@ namespace Arcam.Main.Loggers
                     return;
                 case LogType.site:
                     LogManager.Setup().LoadConfiguration(builder => {
-                        builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToConsole();
-                        builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToFile(fileName: "logs/Generations.txt");
+                        builder.ForLogger().FilterMinLevel(LogLevel.Warn).WriteToConsole();
+                        builder.ForLogger().FilterMinLevel(LogLevel.Warn).WriteToFile(fileName: "logs/Generations.txt");
                     });
                     return;
                 case LogType.main:

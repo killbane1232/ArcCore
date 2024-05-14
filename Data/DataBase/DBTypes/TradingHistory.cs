@@ -1,5 +1,4 @@
-﻿using Arcam.Data.DataTypes;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Arcam.Data.DataBase.DBTypes
 {
