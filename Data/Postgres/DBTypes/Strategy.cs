@@ -33,10 +33,10 @@ namespace Arcam.Data.DataBase.DBTypes
         public int Leverage { get; set; }
         public List<StrategyIndicator> StrategyIndicators { get; set; } = new();
         
-        public Strategy CreateCopy(ApplicationContext db)
+        public Strategy CreateCopy(ApplicationContext db, string? newName = null)
         {
             var strat = new Strategy();
-            strat.Name = null;
+            strat.Name = newName;
             var pair = Pair.GetCopy(db);
             strat.PairId = pair.Id;
             strat.Pair = pair;
