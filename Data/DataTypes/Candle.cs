@@ -1,4 +1,4 @@
-﻿using Arcam.Data.DataBase.DBTypes;
+﻿using Arcam.Data.ClickHouse.DBTypes;
 using Newtonsoft.Json;
 
 namespace Arcam.Data.DataTypes

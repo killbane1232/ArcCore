@@ -48,7 +48,7 @@ namespace Arcam.Main
             cts = new CancellationTokenSource();
             client = new TelegramBotClient(token);
             Users = new Dictionary<long, long>();
-            using (var db = new ApplicationContext())
+            using (var db = new ProdContext())
             {
                 foreach (var item in db.User.Where(x => x.TelegramId != null))
                 {
@@ -92,7 +92,7 @@ namespace Arcam.Main
                 ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
                 _ => exception.ToString()
             };
-            logger.Debug(errorMessage);
+            logger.Error(errorMessage);
 
             return Task.CompletedTask;
         }
@@ -114,7 +114,7 @@ namespace Arcam.Main
                     UserState[msg.Chat.Id] = MenuItem.Start;
                     break;
                 case "/stop":
-                    using (var db = new ApplicationContext())
+                    using (var db = new ProdContext())
                     {
                         foreach (var item in db.User.Where(x => x.TelegramId == msg.Chat.Id))
                         {
@@ -163,7 +163,7 @@ namespace Arcam.Main
 
         public void SendTextMessage(string message)
         {
-            using ApplicationContext db = new ApplicationContext();
+            using ApplicationContext db = new ProdContext();
             var admins = db.User.Where(x => x.TelegramId != null).ToList();
             foreach (var user in admins)
             {
@@ -193,7 +193,7 @@ namespace Arcam.Main
 
         public bool UpdateUserTgId(string login, long chatId)
         {
-            using ApplicationContext db = new();
+            using ApplicationContext db = new ProdContext();
             var users = db.User.Where(x => x.Login == login);
             if (!users.Any())
                 return false;
