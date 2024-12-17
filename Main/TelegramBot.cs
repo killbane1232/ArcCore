@@ -163,6 +163,8 @@ namespace Arcam.Main
 
         public void SendTextMessage(string message)
         {
+            if (message.Contains("Arcam.Main.TelegramBot") && message.Contains("Telegram.Bot.Exceptions.RequestException: Request timed out"))
+                return;
             using ApplicationContext db = new ProdContext();
             var admins = db.User.Where(x => x.TelegramId != null).ToList();
             foreach (var user in admins)
