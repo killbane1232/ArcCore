@@ -14,7 +14,7 @@ namespace Arcam.Main.Loggers
             switch (type) {
                 case LogType.test:
                     LogManager.Setup().LoadConfiguration(builder => {
-                        builder.ForLogger().FilterMinLevel(LogLevel.Debug).FilterMaxLevel(LogLevel.Debug).WriteToConsole();
+                        builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToConsole();
                         builder.ForLogger().FilterMinLevel(LogLevel.Debug).FilterMaxLevel(LogLevel.Debug).WriteToFile(fileName: "logs/Generations.txt");
                     });
                     return;
