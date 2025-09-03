@@ -28,8 +28,9 @@ namespace Arcam.Main.Loggers
                     LogManager.Setup().LoadConfiguration(builder => {
                         builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToConsole();
                         builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToFile(fileName: "logs/${shortdate}/${logger}.txt");
-                        builder.ForLogger().FilterMinLevel(LogLevel.Info).WriteTo(new TelegramLogger());
-                    
+                        builder.ForLogger().FilterMinLevel(LogLevel.Error).WriteTo(new TelegramLogger());
+                        builder.ForLogger().FilterLevel(LogLevel.Info).WriteTo(new TelegramLogger());
+
                     });
                     return;
             }
