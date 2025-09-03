@@ -12,6 +12,7 @@ namespace Arcam.Market
 #pragma warning restore CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
         protected Strategy _strategy = new();
         protected Account _account = new();
+        protected WalletInfo _walletInfo = new();
         public CancellationToken ct;
         protected Logger logger = LogManager.GetCurrentClassLogger();
 
