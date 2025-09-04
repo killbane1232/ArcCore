@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Arcam.Data.ClickHouse.DBTypes
 {
-    [Table("trading_history"), PrimaryKey("PairId", "TimingId", "TimeStamp")]
+    [Table("//home/arcam_user"), PrimaryKey("PairId", "TimingId", "TimeStamp")]
     public class TradingHistory
     {
         [Column("pair_id")]

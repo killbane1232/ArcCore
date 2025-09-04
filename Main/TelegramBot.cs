@@ -90,6 +90,7 @@ namespace Arcam.Main
             var errorMessage = exception switch
             {
                 ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                RequestException requestException => $"Telegram Request EX:\n[{requestException.HttpStatusCode}]\n{requestException.Message}",
                 _ => exception.ToString()
             };
             logger.Error(errorMessage);
